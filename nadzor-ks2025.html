@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neutralizam — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B0D12; --surface: #131620; --surface2: #1A1E2E;
+      --gold: #C9A84C; --gold-dim: #8A7035;
+      --text: #E5E3DE; --text-sub: #7A7870; --border: #232737;
+      --green: #4CAF7A; --red: #e07070;
+      --font-disp: 'Playfair Display', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 2.5rem; width: 100%; max-width: 380px;
+    }
+    .login-box h1 { font-family: var(--font-disp); font-size: 1.6rem; margin-bottom: 0.5rem; color: var(--gold); }
+    .login-box p { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 1.75rem; }
+    .inp {
+      display: block; width: 100%; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+      font-family: var(--font-body); font-size: 0.9rem; padding: 0.8rem 1rem;
+      margin-bottom: 0.875rem; transition: border-color 0.2s;
+    }
+    .inp:focus { outline: none; border-color: var(--gold-dim); }
+    .btn {
+      width: 100%; background: var(--gold); border: none; color: var(--bg);
+      padding: 0.85rem; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .err { color: var(--red); font-size: 0.82rem; margin-top: 0.75rem; }
+
+    /* ── DASHBOARD ── */
+    #dashboard { display: none; }
+
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 2.5rem; height: 60px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 10;
+    }
+    .logo { font-family: var(--font-disp); color: var(--gold); font-size: 1.15rem; }
+    .logout-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-sub);
+      padding: 0.35rem 1rem; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.8rem; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+    /* ── STAT CARDS ── */
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.5rem; }
+    .stat-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      padding: 1.5rem; text-align: center;
+    }
+    .stat-box .num { font-family: var(--font-disp); font-size: 2.8rem; color: var(--gold); line-height: 1; margin-bottom: 0.5rem; }
+    .stat-box .lbl { color: var(--text-sub); font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* ── TABS ── */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+    .tab {
+      padding: 0.75rem 1.75rem; background: none; border: none; color: var(--text-sub);
+      cursor: pointer; font-family: var(--font-body); font-size: 0.88rem;
+      letter-spacing: 0.05em; text-transform: uppercase; border-bottom: 2px solid transparent;
+      transition: all 0.2s; margin-bottom: -1px;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      text-align: left; padding: 0.75rem 1rem; color: var(--text-sub);
+      font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); font-weight: 400;
+    }
+    tbody tr { border-bottom: 1px solid rgba(35,39,55,0.5); transition: background 0.15s; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td { padding: 0.875rem 1rem; color: var(--text); vertical-align: top; }
+    td.sub { color: var(--text-sub); font-size: 0.82rem; }
+
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 3px;
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.03em;
+    }
+    .badge-pre { background: rgba(201,168,76,0.15); color: var(--gold); }
+    .badge-post { background: rgba(76,175,122,0.15); color: var(--green); }
+    .badge-inactive { background: rgba(224,112,112,0.15); color: #e07070; }
+
+    /* ── SURVEY CARDS ── */
+    .survey-cards { display: flex; flex-direction: column; gap: 1.5rem; }
+    .survey-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; overflow: hidden;
+    }
+    .survey-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+    .survey-card-user { font-weight: 500; font-size: 0.95rem; }
+    .survey-card-user span { color: var(--text-sub); font-size: 0.8rem; font-weight: 300; margin-left: 0.5rem; }
+    .survey-card-date { color: var(--text-sub); font-size: 0.78rem; }
+    .survey-card-body { padding: 1.5rem; }
+    .survey-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .survey-section-title {
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-sub); margin-bottom: 1rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .s-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.7rem; }
+    .s-label { flex: 1; color: var(--text-sub); font-size: 0.8rem; }
+    .s-bar { width: 70px; height: 4px; background: var(--border); border-radius: 2px; flex-shrink: 0; }
+    .s-fill { height: 4px; border-radius: 2px; }
+    .s-fill-pre { background: var(--gold); }
+    .s-fill-post { background: var(--green); }
+    .s-val { font-size: 0.82rem; font-weight: 500; min-width: 28px; text-align: right; }
+    .s-val-pre { color: var(--gold); }
+    .s-val-post { color: var(--green); }
+    .no-data { color: var(--text-sub); font-size: 0.82rem; padding: 0.5rem 0; font-style: italic; }
+    .comments-section {
+      margin-top: 1.25rem; padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .comment-bubble {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.875rem 1rem;
+      color: var(--text); font-size: 0.875rem; font-style: italic; line-height: 1.6;
+      margin-top: 0.5rem;
+    }
+    @media (max-width: 700px) { .survey-sections { grid-template-columns: 1fr; } }
+
+    /* ── DETAIL MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px); z-index: 100;
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 2rem; width: 100%; max-width: 540px;
+      position: relative; max-height: 85vh; overflow-y: auto;
+    }
+    .modal-box h3 { font-family: var(--font-disp); font-size: 1.4rem; color: var(--gold); margin-bottom: 0.35rem; }
+    .modal-box .modal-sub { color: var(--text-sub); font-size: 0.82rem; margin-bottom: 1.75rem; }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none; color: var(--text-sub);
+      font-size: 1.1rem; cursor: pointer; transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-section { margin-bottom: 1.5rem; }
+    .modal-section-title {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-sub); margin-bottom: 1rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .answer-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+    .answer-label { flex: 1; color: var(--text-sub); font-size: 0.83rem; }
+    .answer-bar { width: 100px; height: 5px; background: var(--border); border-radius: 3px; flex-shrink: 0; }
+    .answer-bar-fill { height: 5px; background: var(--gold); border-radius: 3px; }
+    .answer-val { color: var(--gold); font-size: 0.88rem; font-weight: 500; min-width: 16px; text-align: right; }
+    .answer-comment {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.875rem 1rem;
+      color: var(--text); font-size: 0.875rem; font-style: italic; line-height: 1.6;
+    }
+    .no-survey { color: var(--text-sub); font-size: 0.875rem; padding: 1rem 0; }
+
+
+    .score-bar { display: flex; align-items: center; gap: 0.5rem; }
+    .bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; max-width: 80px; }
+    .bar-fill { height: 4px; background: var(--gold); border-radius: 2px; }
+
+    /* ── SEARCH ── */
+    .toolbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+    .search {
+      flex: 1; max-width: 320px; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+      font-family: var(--font-body); font-size: 0.875rem; padding: 0.6rem 1rem;
+      transition: border-color 0.2s;
+    }
+    .search:focus { outline: none; border-color: var(--gold-dim); }
+    .count { color: var(--text-sub); font-size: 0.82rem; margin-left: auto; }
+
+    /* ── LOADING ── */
+    .loading { text-align: center; padding: 3rem; color: var(--text-sub); }
+    .spinner {
+      display: inline-block; width: 28px; height: 28px;
+      border: 2px solid var(--border); border-top-color: var(--gold);
+      border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── COMMENT ── */
+    .comment { font-style: italic; color: var(--text-sub); font-size: 0.82rem; margin-top: 0.25rem; }
+
+    @media (max-width: 600px) {
+      .stat-row { grid-template-columns: 1fr; }
+      header { padding: 0 1.25rem; }
+      main { padding: 1.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>Admin Panel</h1>
+    <p>Neutralizam — Samo za administratore</p>
+    <input class="inp" type="email" id="adminEmail" placeholder="Email" />
+    <input class="inp" type="password" id="adminPass" placeholder="Lozinka" />
+    <button class="btn" id="adminLogin">Prijavi se</button>
+    <p class="err hidden" id="adminErr">Pogrešan email ili lozinka.</p>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <header>
+    <span class="logo">N · Admin</span>
+    <button class="logout-btn" id="adminLogout">Odjava</button>
+  </header>
+
+  <main>
+    <!-- Stat cards -->
+    <div class="stat-row">
+      <div class="stat-box"><div class="num" id="aStatUsers">—</div><div class="lbl">Registriranih korisnika</div></div>
+      <div class="stat-box"><div class="num" id="aStatSurveys">—</div><div class="lbl">Popunjenih anketa</div></div>
+      <div class="stat-box"><div class="num" id="aStatVisitors">—</div><div class="lbl">Posjeta stranici</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="users">Korisnici</button>
+      <button class="tab" data-tab="surveys">Ankete</button>
+    </div>
+
+    <!-- Users tab -->
+    <div class="tab-content active" id="tab-users">
+      <div class="toolbar">
+        <input class="search" type="text" id="userSearch" placeholder="Traži po imenu..."/>
+        <span class="count" id="userCount"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>Ime i prezime</th>
+              <th>Korisnički ID</th>
+              <th>Registriran</th>
+              <th>Ankete</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody">
+            <tr><td colspan="4"><div class="loading"><div class="spinner"></div><br>Učitavanje...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Surveys tab -->
+    <div class="tab-content" id="tab-surveys">
+      <div class="toolbar">
+        <input class="search" type="text" id="surveySearch" placeholder="Traži po imenu ili ID-u..."/>
+        <span class="count" id="surveyCount"></span>
+      </div>
+      <div id="surveysGrid">
+        <div class="loading"><div class="spinner"></div><br>Učitavanje...</div>
+      </div>
+    </div>
+  </main>
+
+<!-- ── DETAIL MODAL ── -->
+<div class="modal-overlay" id="detailModal" style="display:none">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose">✕</button>
+    <h3 id="modalName">Korisnik</h3>
+    <p class="modal-sub" id="modalId"></p>
+    <div id="modalContent"></div>
+  </div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, writeBatch, increment
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// ── FIREBASE CONFIG ──────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyC3BEOxM6Z-gVVtEmwKkxdKmSOE1zOYFMY",
+  authDomain:        "neutralizam.firebaseapp.com",
+  projectId:         "neutralizam",
+  storageBucket:     "neutralizam.firebasestorage.app",
+  messagingSenderId: "451169994851",
+  appId:             "1:451169994851:web:2b6be52342c655d5c61056"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ── LOGIN ────────────────────────────────────────────────────
+const adminPassInput = document.getElementById("adminPass");
+const adminEmailInput = document.getElementById("adminEmail");
+const adminErr       = document.getElementById("adminErr");
+
+document.getElementById("adminLogin").addEventListener("click", tryLogin);
+adminPassInput.addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+
+async function tryLogin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const pass  = adminPassInput.value;
+  adminErr.classList.add("hidden");
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    // onAuthStateChanged will handle UI
+  } catch(e) {
+    adminErr.classList.remove("hidden");
+    adminErr.textContent = "Pogrešan email ili lozinka.";
+  }
+}
+
+document.getElementById("adminLogout").addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "index.html";
+});
+
+// Auto-detect auth state
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboard").style.display   = "block";
+    loadAll();
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("dashboard").style.display   = "none";
+  }
+});
+
+// ── TABS ─────────────────────────────────────────────────────
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+// ── LOAD DATA ────────────────────────────────────────────────
+let allUsers   = [];
+let allSurveys = [];
+
+async function loadAll() {
+  await Promise.all([loadStats(), loadUsers(), loadSurveys()]);
+  renderUsers(allUsers); // re-render after both loaded
+}
+
+async function loadStats() {
+  try {
+    const snap = await getDoc(doc(db, "meta", "stats"));
+    if (snap.exists()) {
+      const d = snap.data();
+      document.getElementById("aStatVisitors").textContent = d.visitors ?? 0;
+      document.getElementById("aStatSurveys").textContent  = d.surveys  ?? 0;
+    }
+  } catch(e) { console.warn(e); }
+}
+
+async function loadUsers() {
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    allUsers = [];
+    snap.forEach(d => allUsers.push({ id: d.id, ...d.data() }));
+    document.getElementById("aStatUsers").textContent = allUsers.length;
+    renderUsers(allUsers);
+  } catch(e) {
+    document.getElementById("usersBody").innerHTML = `<tr><td colspan="4" style="color:var(--red);padding:1rem">Greška pri učitavanju korisnika.</td></tr>`;
+  }
+}
+
+async function loadSurveys() {
+  try {
+    const snap = await getDocs(collection(db, "surveys"));
+    allSurveys = [];
+    snap.forEach(d => allSurveys.push({ id: d.id, ...d.data() }));
+    renderSurveys(allSurveys);
+  } catch(e) {
+    document.getElementById("surveysBody").innerHTML = `<tr><td colspan="4" style="color:var(--red);padding:1rem">Greška pri učitavanju anketa.</td></tr>`;
+  }
+}
+
+// ── RENDER USERS ─────────────────────────────────────────────
+function renderUsers(users) {
+  document.getElementById("userCount").textContent = `${users.length} korisnika`;
+  const tbody = document.getElementById("usersBody");
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="sub" style="padding:1.5rem">Nema korisnika.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = users.map(u => {
+    const surveysForUser = allSurveys.filter(s => s.userId === u.id);
+    const hasPre  = surveysForUser.some(s => s.type === "pre");
+    const hasPost = surveysForUser.some(s => s.type === "post");
+    const surveyBadges = [
+      hasPre  ? `<span class="badge badge-pre" style="cursor:pointer" onclick="showUserSurvey('${u.id}')">Anketa</span>` : "",
+      hasPost ? `<span class="badge badge-post" style="cursor:pointer" onclick="showUserSurvey('${u.id}')">Dojmovi</span>` : ""
+    ].filter(Boolean).join(" ") || `<span style="color:var(--text-sub);font-size:0.8rem">Nije riješio</span>`;
+
+    const created = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString("hr-HR") : "—";
+
+        const adminBtns = `
+      <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap">
+        <button onclick="adminDeleteUser('${u.id}','${u.name} ${u.surname}')"
+          style="background:none;border:1px solid #e07070;color:#e07070;padding:0.25rem 0.75rem;border-radius:3px;cursor:pointer;font-size:0.75rem;font-family:var(--font-body)">
+          Izbriši
+        </button>
+      </div>`;
+
+    return `<tr>
+      <td>${u.name} ${u.surname}</td>
+      <td class="sub">${u.id}</td>
+      <td class="sub">${created}</td>
+      <td>${surveyBadges}${adminBtns}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ── RENDER SURVEYS ───────────────────────────────────────────
+const SURVEY_LABELS = {
+  political_satisfaction: "Zadovoljstvo sustavom",
+  change_belief:          "Vjera u promjenu",
+  political_interest:     "Interes za politiku",
+  post_thinking:          "Potaknulo na razmišljanje",
+  post_agreement:         "Slaganje s idejama",
+  post_recommend:         "Preporuka"
+};
+
+function renderSurveys(filtered) {
+  // Group by userId — show one card per user
+  const userIds = [...new Set(filtered.map(s => s.userId))];
+  document.getElementById("surveyCount").textContent = `${userIds.length} korisnika`;
+  const grid = document.getElementById("surveysGrid");
+
+  if (!userIds.length) {
+    grid.innerHTML = `<p style="color:var(--text-sub);padding:1.5rem">Nema anketa.</p>`;
+    return;
+  }
+
+  const cards = userIds.map(uid => {
+    const user = allUsers.find(u => u.id === uid);
+    const userName = user ? `${user.name} ${user.surname}` : uid;
+    const pre  = filtered.find(s => s.userId === uid && s.type === "pre");
+    const post = filtered.find(s => s.userId === uid && s.type === "post");
+
+    const latestDate = [pre, post]
+      .filter(Boolean)
+      .map(s => s.timestamp?.toDate?.() ?? new Date(0))
+      .sort((a,b) => b-a)[0];
+    const dateStr = latestDate ? latestDate.toLocaleDateString("hr-HR") : "—";
+
+    function renderAnswers(survey, cls) {
+      if (!survey) return `<p class="no-data">Nije riješio.</p>`;
+      return Object.entries(survey.data || {})
+        .filter(([k]) => k !== "comment")
+        .map(([k, v]) => `
+          <div class="s-row">
+            <span class="s-label">${SURVEY_LABELS[k] ?? k}</span>
+            <div class="s-bar"><div class="s-fill s-fill-${cls}" style="width:${v*20}%"></div></div>
+            <span class="s-val s-val-${cls}">${v}/5</span>
+          </div>`).join("");
+    }
+
+    const comment = post?.data?.comment
+      ? `<div class="comments-section">
+          <div class="survey-section-title">Komentar</div>
+          <div class="comment-bubble">"${post.data.comment}"</div>
+        </div>`
+      : "";
+
+    return `
+      <div class="survey-card">
+        <div class="survey-card-header">
+          <div>
+            <span class="survey-card-user">${userName}<span>${uid}</span></span>
+          </div>
+          <span class="survey-card-date">${dateStr}</span>
+        </div>
+        <div class="survey-card-body">
+          <div class="survey-sections">
+            <div>
+              <div class="survey-section-title">Anketa — prije čitanja</div>
+              ${renderAnswers(pre, "pre")}
+            </div>
+            <div>
+              <div class="survey-section-title">Dojmovi — nakon čitanja</div>
+              ${renderAnswers(post, "post")}
+            </div>
+          </div>
+          ${comment}
+        </div>
+      </div>`;
+  }).join("");
+
+  grid.innerHTML = `<div class="survey-cards">${cards}</div>`;
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+document.getElementById("userSearch").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  renderUsers(allUsers.filter(u =>
+    (u.name + " " + u.surname + " " + u.id).toLowerCase().includes(q)
+  ));
+});
+
+document.getElementById("surveySearch").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  const matchingUserIds = allUsers
+    .filter(u => (u.name + " " + u.surname + " " + u.id).toLowerCase().includes(q))
+    .map(u => u.id);
+  renderSurveys(allSurveys.filter(s =>
+    (s.userId ?? "").toLowerCase().includes(q) || matchingUserIds.includes(s.userId)
+  ));
+});
+
+// ── DETAIL MODAL ─────────────────────────────────────────────
+const LABELS = {
+  political_satisfaction: "Zadovoljstvo sustavom",
+  change_belief:          "Vjera u promjenu",
+  political_interest:     "Interes za politiku",
+  post_thinking:          "Potaknulo na razmišljanje",
+  post_agreement:         "Slaganje s idejama",
+  post_recommend:         "Preporuka"
+};
+
+window.showUserSurvey = function(userId) {
+  const user    = allUsers.find(u => u.id === userId);
+  const pre     = allSurveys.find(s => s.userId === userId && s.type === "pre");
+  const post    = allSurveys.find(s => s.userId === userId && s.type === "post");
+
+  document.getElementById("modalName").textContent = user ? `${user.name} ${user.surname}` : userId;
+  document.getElementById("modalId").textContent = userId;
+
+  function renderSection(survey, cls) {
+    if (!survey) return `<p class="no-survey">Nije riješio.</p>`;
+    return Object.entries(survey.data || {})
+      .filter(([k]) => k !== "comment")
+      .map(([k, v]) => `
+        <div class="answer-row">
+          <span class="answer-label">${SURVEY_LABELS[k] ?? k}</span>
+          <div class="answer-bar"><div class="answer-bar-fill" style="width:${v*20}%;background:${cls==='pre'?'var(--gold)':'var(--green)'}"></div></div>
+          <span class="answer-val" style="color:${cls==='pre'?'var(--gold)':'var(--green)'}">${v}/5</span>
+        </div>`).join("");
+  }
+
+  const comment = post?.data?.comment
+    ? `<div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+        <div class="modal-section-title">Komentar na knjigu</div>
+        <div class="answer-comment">"${post.data.comment}"</div>
+       </div>`
+    : "";
+
+  const html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+      <div>
+        <div class="modal-section-title" style="color:var(--gold)">Anketa — prije čitanja</div>
+        ${renderSection(pre, "pre")}
+      </div>
+      <div>
+        <div class="modal-section-title" style="color:var(--green)">Dojmovi — nakon čitanja</div>
+        ${renderSection(post, "post")}
+      </div>
+    </div>
+    ${comment}`;
+
+  document.getElementById("modalContent").innerHTML = html;
+  document.getElementById("detailModal").style.display = "flex";
+};
+
+document.getElementById("modalClose").addEventListener("click", () => {
+  document.getElementById("detailModal").style.display = "none";
+});
+document.getElementById("detailModal").addEventListener("click", e => {
+  if (e.target === document.getElementById("detailModal"))
+    document.getElementById("detailModal").style.display = "none";
+});
+
+
+function showAdminToast(msg) {
+  let t = document.getElementById("adminToast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "adminToast";
+    t.style.cssText = "position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1A1E2E;border:1px solid #C9A84C;color:#E5E3DE;padding:0.9rem 1.8rem;border-radius:4px;font-size:0.9rem;z-index:9999;opacity:0;transition:opacity 0.3s;max-width:90vw;text-align:center;pointer-events:none";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "1";
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.style.opacity = "0"; }, 3000);
+}
+
+// ── ADMIN ACTIONS ─────────────────────────────────────────────
+
+window.adminDeleteUser = async function(userId, userName) {
+  try {
+    await deleteDoc(doc(db, "users", userId));
+    await loadAll();
+    showAdminToast(`Korisnik ${userName} je izbrisan.`);
+  } catch(e) {
+    showAdminToast("Greška: " + e.message);
+  }
+};
+</script>
+</body>
+</html>

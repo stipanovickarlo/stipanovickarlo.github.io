@@ -5,9 +5,13 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc,
-  increment, collection, addDoc, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  increment, collection, addDoc, serverTimestamp,
+  query, where, getDocs, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ─────────────────────────────────────────────────────────────
 // !! ZAMIJENI OVO SA SVOJIM FIREBASE KONFIGOM !!
@@ -16,12 +20,12 @@ import {
 // 3. Dodaj web app → kopiraj firebaseConfig
 // ─────────────────────────────────────────────────────────────
 const firebaseConfig = {
-  apiKey:            "TVOJ_API_KEY",
-  authDomain:        "TVOJ_PROJECT.firebaseapp.com",
-  projectId:         "TVOJ_PROJECT_ID",
-  storageBucket:     "TVOJ_PROJECT.appspot.com",
-  messagingSenderId: "TVOJ_SENDER_ID",
-  appId:             "TVOJ_APP_ID"
+  apiKey:            "AIzaSyC3BEOxM6Z-gVVtEmwKkxdKmSOE1zOYFMY",
+  authDomain:        "neutralizam.firebaseapp.com",
+  projectId:         "neutralizam",
+  storageBucket:     "neutralizam.firebasestorage.app",
+  messagingSenderId: "451169994851",
+  appId:             "1:451169994851:web:2b6be52342c655d5c61056"
 };
 
 let db;
@@ -30,9 +34,28 @@ let firebaseReady = false;
 try {
   const app = initializeApp(firebaseConfig);
   db = getFirestore(app);
+  window._fbAuth = getAuth(app);
   firebaseReady = true;
 } catch (e) {
   console.warn("Firebase nije konfiguriran. Radi u demo modu.", e);
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────────────────────
+function showToast(msg) {
+  let t = document.getElementById("toastMsg");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "toastMsg";
+    t.style.cssText = "position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1A1E2E;border:1px solid #C9A84C;color:#E5E3DE;padding:0.9rem 1.8rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.9rem;z-index:9999;opacity:0;transition:opacity 0.3s;max-width:90vw;text-align:center;pointer-events:none";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "1";
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.style.opacity = "0"; }, 3000);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -203,32 +226,37 @@ function hashPass(pass) {
   return "h" + Math.abs(hash).toString(36) + pass.length;
 }
 
+
+function generateUID() {
+  return 'u_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+}
+
 function makeUserId(name, surname) {
   return (name + "_" + surname).toLowerCase().replace(/\s+/g, "").replace(/[^a-z_\u00C0-\u017E]/g, "");
 }
 
 async function loginUser(name, surname, pass) {
   if (!firebaseReady) {
-    // Demo login bez Firebase
-    currentUser = { id: makeUserId(name, surname), name, surname };
+    currentUser = { id: generateUID(), name, surname };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  const uid = makeUserId(name, surname);
-  const userRef = doc(db, "users", uid);
-  const snap = await getDoc(userRef);
+  const loginKey = makeUserId(name, surname);
+  const snap = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
 
-  if (!snap.exists()) {
+  if (snap.empty) {
     return { ok: false, msg: currentLang === "hr" ? "Korisnik ne postoji. Registriraj se." : "User not found. Please register." };
   }
 
-  const data = snap.data();
+  const userDoc = snap.docs[0];
+  const data = userDoc.data();
+
   if (data.passHash !== hashPass(pass)) {
     return { ok: false, msg: currentLang === "hr" ? "Pogrešna šifra." : "Wrong password." };
   }
 
-  currentUser = { id: uid, name: data.name, surname: data.surname };
+  currentUser = { id: userDoc.id, name: data.name, surname: data.surname };
   localStorage.setItem("user", JSON.stringify(currentUser));
   return { ok: true };
 }
@@ -239,22 +267,26 @@ async function registerUser(name, surname, pass) {
   }
 
   if (!firebaseReady) {
-    currentUser = { id: makeUserId(name, surname), name, surname };
+    const uid = generateUID();
+    currentUser = { id: uid, name, surname };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  const uid = makeUserId(name, surname);
-  const userRef = doc(db, "users", uid);
-  const snap = await getDoc(userRef);
+  const loginKey = makeUserId(name, surname);
 
-  if (snap.exists()) {
+  // Check if loginKey already active (existing non-deleted user)
+  const { query: q2, where: w2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const existing = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
+  if (!existing.empty) {
     return { ok: false, msg: currentLang === "hr" ? "Ime već postoji. Prijavi se." : "Username exists. Log in instead." };
   }
 
-  await setDoc(userRef, {
+  const uid = generateUID();
+  await setDoc(doc(db, "users", uid), {
     name,
     surname,
+    loginKey,
     passHash: hashPass(pass),
     createdAt: serverTimestamp()
   });
@@ -292,14 +324,48 @@ const loginForm = document.getElementById("loginForm");
 const regForm   = document.getElementById("registerForm");
 const loggedView= document.getElementById("loggedInView");
 
+function clearModalInputs() {
+  ["loginName","loginSurname","loginPass",
+   "regName","regSurname","regPass",
+   "adminEmailInput","adminPassInput"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("loginError").classList.add("hidden");
+  document.getElementById("regError").classList.add("hidden");
+  document.getElementById("adminLoginError").classList.add("hidden");
+}
+
 function showModal() {
   overlay.classList.remove("hidden");
+  // Reset to mode select if not logged in
+  if (!currentUser) {
+    clearModalInputs();
+    document.getElementById("modeSelect").classList.remove("hidden");
+    document.getElementById("anonSection").classList.add("hidden");
+    document.getElementById("adminSection").classList.add("hidden");
+  }
   if (currentUser) {
+    document.getElementById("modeSelect").classList.add("hidden");
+    document.getElementById("anonSection").classList.add("hidden");
+    document.getElementById("adminSection").classList.add("hidden");
     loginForm.classList.add("hidden");
     regForm.classList.add("hidden");
     loggedView.classList.remove("hidden");
     document.getElementById("loggedAvatar").textContent = currentUser.name[0].toUpperCase();
     document.getElementById("loggedName").textContent = currentUser.name + " " + currentUser.surname;
+    const statusEl = document.getElementById("accountStatusMsg");
+    if (statusEl) {
+      if (currentUser.deactivated) {
+        statusEl.textContent = currentLang === "hr" ? "Račun je deaktiviran" : "Account is deactivated";
+        statusEl.className = "account-status deactivated";
+        statusEl.classList.remove("hidden");
+        document.getElementById("doDeactivate").textContent = currentLang === "hr" ? "Reaktiviraj račun" : "Reactivate account";
+      } else {
+        statusEl.classList.add("hidden");
+        document.getElementById("doDeactivate").textContent = currentLang === "hr" ? "Deaktiviraj račun" : "Deactivate account";
+      }
+    }
   } else {
     loginForm.classList.remove("hidden");
     regForm.classList.add("hidden");
@@ -307,11 +373,67 @@ function showModal() {
   }
 }
 
-function hideModal() { overlay.classList.add("hidden"); }
+function hideModal() {
+  overlay.classList.add("hidden");
+  document.getElementById("modeSelect").classList.remove("hidden");
+  document.getElementById("anonSection").classList.add("hidden");
+  document.getElementById("adminSection").classList.add("hidden");
+}
 
 document.getElementById("openLogin").addEventListener("click", showModal);
 document.getElementById("closeLogin").addEventListener("click", hideModal);
-overlay.addEventListener("click", e => { if (e.target === overlay) hideModal(); });
+
+
+// ─────────────────────────────────────────────────────────────
+// MODE SELECTION
+// ─────────────────────────────────────────────────────────────
+document.getElementById("pickAnon").addEventListener("click", () => {
+  document.getElementById("modeSelect").classList.add("hidden");
+  document.getElementById("anonSection").classList.remove("hidden");
+  loginForm.classList.remove("hidden");
+  regForm.classList.add("hidden");
+});
+
+document.getElementById("pickAdmin").addEventListener("click", () => {
+  document.getElementById("modeSelect").classList.add("hidden");
+  document.getElementById("adminSection").classList.remove("hidden");
+  document.getElementById("adminPassInput").value = "";
+  document.getElementById("adminLoginError").classList.add("hidden");
+});
+
+document.getElementById("backFromAnon").addEventListener("click", () => {
+  clearModalInputs();
+  document.getElementById("anonSection").classList.add("hidden");
+  document.getElementById("modeSelect").classList.remove("hidden");
+});
+
+document.getElementById("backFromAdmin").addEventListener("click", () => {
+  clearModalInputs();
+  document.getElementById("adminSection").classList.add("hidden");
+  document.getElementById("modeSelect").classList.remove("hidden");
+});
+
+document.getElementById("doAdminLogin").addEventListener("click", async () => {
+  const email = document.getElementById("adminEmailInput").value.trim();
+  const pass  = document.getElementById("adminPassInput").value;
+  const errEl = document.getElementById("adminLoginError");
+  errEl.classList.add("hidden");
+  try {
+    await signInWithEmailAndPassword(window._fbAuth, email, pass);
+    hideModal();
+    window.location.href = "nadzor-ks2025.html";
+  } catch(e) {
+    errEl.textContent = "Pogrešan email ili lozinka.";
+    errEl.classList.remove("hidden");
+  }
+});
+
+document.getElementById("adminPassInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("doAdminLogin").click();
+});
+document.getElementById("adminEmailInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("adminPassInput").focus();
+});
 
 document.getElementById("toRegister").addEventListener("click", () => {
   loginForm.classList.add("hidden");
@@ -339,6 +461,7 @@ document.getElementById("doLogin").addEventListener("click", async () => {
     errEl.classList.add("hidden");
     updateLoginUI();
     hideModal();
+    location.reload();
   } else {
     errEl.textContent = result.msg;
     errEl.classList.remove("hidden");
@@ -362,6 +485,7 @@ document.getElementById("doRegister").addEventListener("click", async () => {
     errEl.classList.add("hidden");
     updateLoginUI();
     hideModal();
+    location.reload();
   } else {
     errEl.textContent = result.msg;
     errEl.classList.remove("hidden");
@@ -373,6 +497,7 @@ document.getElementById("doLogout").addEventListener("click", () => {
   localStorage.removeItem("user");
   updateLoginUI();
   hideModal();
+  location.reload();
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -380,15 +505,12 @@ document.getElementById("doLogout").addEventListener("click", () => {
 // ─────────────────────────────────────────────────────────────
 async function submitSurvey(type, data, formEl, doneEl) {
   if (!currentUser) {
-    alert(currentLang === "hr"
-      ? "Moraš se prijaviti za slanje ankete."
-      : "You need to log in to submit a survey.");
     showModal();
     return;
   }
 
   if (Object.keys(data).length === 0) {
-    alert(currentLang === "hr" ? "Odaberi barem jedan odgovor." : "Select at least one answer.");
+    showToast(currentLang === "hr" ? "Odaberi barem jedan odgovor." : "Select at least one answer.");
     return;
   }
 
@@ -410,7 +532,7 @@ async function submitSurvey(type, data, formEl, doneEl) {
     doneEl.classList.remove("hidden");
   } catch (e) {
     console.error("Survey submit error:", e);
-    alert(currentLang === "hr" ? "Greška pri slanju. Pokušaj ponovo." : "Error submitting. Try again.");
+    showToast(currentLang === "hr" ? "Greška pri slanju. Pokušaj ponovo." : "Error submitting. Try again.");
   }
 }
 
@@ -448,8 +570,52 @@ document.getElementById("downloadBtn").addEventListener("click", async () => {
   }
 });
 
+
+// ─────────────────────────────────────────────────────────────
+// DEACTIVATE / DELETE ACCOUNT
+// ─────────────────────────────────────────────────────────────
+document.getElementById("doDelete").addEventListener("click", async () => {
+  if (!currentUser || !firebaseReady) return;
+  const msg = currentLang === "hr"
+    ? "Trajno izbrisati račun i sve tvoje ankete? Ova radnja se ne može poništiti."
+    : "Permanently delete account and all your surveys? This cannot be undone.";
+  if (!confirm(msg)) return;
+  try {
+    // Samo briše korisnika — ankete ostaju na serveru kao statistika
+    await deleteDoc(doc(db, "users", currentUser.id));
+    currentUser = null;
+    localStorage.removeItem("user");
+    hideModal();
+    showToast(currentLang === "hr" ? "Račun je trajno izbrisan." : "Account permanently deleted.");
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { showToast(currentLang === "hr" ? "Greška pri brisanju." : "Error deleting account."); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// CHECK COMPLETED SURVEYS ON LOAD
+// ─────────────────────────────────────────────────────────────
+async function checkCompletedSurveys() {
+  if (!currentUser || !firebaseReady) return;
+  try {
+    const snap = await getDocs(query(collection(db, "surveys"), where("userId", "==", currentUser.id)));
+    snap.forEach(d => {
+      const type = d.data().type;
+      if (type === "pre") {
+        document.getElementById("preSurveyForm").classList.add("hidden");
+        document.getElementById("preSurveyDone").classList.remove("hidden");
+      }
+      if (type === "post") {
+        document.getElementById("postSurveyForm").classList.add("hidden");
+        document.getElementById("postSurveyDone").classList.remove("hidden");
+      }
+    });
+  } catch(e) { console.warn("checkCompletedSurveys error:", e); }
+}
+
 // ─────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────
 loadStoredUser();
 updateLoginUI();
+checkCompletedSurveys();
+
