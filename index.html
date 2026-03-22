@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="hr" data-lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neutralizam — Iskren Svijet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ NAVIGATION ═══ -->
+<nav id="navbar">
+  <div class="nav-logo">
+    <span class="logo-n">N</span><span class="logo-rest" data-hr="eutralizam" data-en="eutralism">eutralizam</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#hero"     data-hr="Uvod"       data-en="Intro">Uvod</a></li>
+    <li><a href="#stats"    data-hr="Statistika"  data-en="Stats">Statistika</a></li>
+    <li><a href="#pre-survey" data-hr="Anketa"    data-en="Survey">Anketa</a></li>
+    <li><a href="#download" data-hr="Knjiga"      data-en="Book">Knjiga</a></li>
+    <li><a href="#post-survey" data-hr="Dojmovi"  data-en="Feedback">Dojmovi</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="lang-toggle" id="langToggle">EN</button>
+    <button class="login-btn" id="openLogin" data-hr="Prijava" data-en="Login">Prijava</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════ HERO ═══ -->
+<section id="hero" class="parallax-section">
+  <div class="parallax-bg" id="heroBg"></div>
+  <div class="hero-content reveal">
+    <div class="hero-emblem">
+      <div class="emblem-ring ring1"></div>
+      <div class="emblem-ring ring2"></div>
+      <div class="emblem-ring ring3"></div>
+      <span class="emblem-letter">N</span>
+    </div>
+    <h1 class="hero-title">
+      <span data-hr="Iskren" data-en="An Honest">Iskren</span><br>
+      <em><span data-hr="Svijet" data-en="World">Svijet</span></em>
+    </h1>
+    <p class="hero-sub" data-hr="Nova ideologija utemeljena na jednoj jedinstvenoj premisi — iskrenosti." data-en="A new ideology built on one single premise — honesty.">
+      Nova ideologija utemeljena na jednoj jedinstvenoj premisi — iskrenosti.
+    </p>
+    <a href="#stats" class="scroll-cta">
+      <span data-hr="Istraži" data-en="Explore">Istraži</span>
+      <div class="cta-arrow"></div>
+    </a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ DIVIDER ═══ -->
+<div class="section-divider parallax-divider" data-speed="0.3">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ STATS ═══ -->
+<section id="stats" class="parallax-section">
+  <div class="parallax-bg stats-bg" id="statsBg"></div>
+  <div class="section-inner reveal">
+    <p class="section-label" data-hr="Zajednica raste" data-en="Community growing">Zajednica raste</p>
+    <h2 class="section-title" data-hr="Brojevi govore" data-en="Numbers speak">Brojevi govore</h2>
+    <div class="stats-grid">
+      <div class="stat-card" data-stat="visitors">
+        <div class="stat-icon">◎</div>
+        <div class="stat-number" id="statVisitors">0</div>
+        <div class="stat-label" data-hr="Posjeta stranici" data-en="Page visits">Posjeta stranici</div>
+      </div>
+      <div class="stat-card" data-stat="surveys">
+        <div class="stat-icon">◈</div>
+        <div class="stat-number" id="statSurveys">0</div>
+        <div class="stat-label" data-hr="Ispunjenih anketa" data-en="Surveys completed">Ispunjenih anketa</div>
+      </div>
+      <div class="stat-card" data-stat="downloads">
+        <div class="stat-icon">◉</div>
+        <div class="stat-number" id="statDownloads">0</div>
+        <div class="stat-label" data-hr="Preuzimanja knjige" data-en="Book downloads">Preuzimanja knjige</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ DIVIDER ═══ -->
+<div class="section-divider parallax-divider" data-speed="0.2">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ PRE-SURVEY ═══ -->
+<section id="pre-survey" class="parallax-section">
+  <div class="parallax-bg survey-bg" id="surveyBg"></div>
+  <div class="section-inner reveal">
+    <p class="section-label" data-hr="Prije čitanja" data-en="Before reading">Prije čitanja</p>
+    <h2 class="section-title" data-hr="Tvoje polazište" data-en="Your starting point">Tvoje polazište</h2>
+    <p class="section-desc" data-hr="Odgovori na kratku anketu prije čitanja knjige. Rezultati su anonimni." data-en="Answer a short survey before reading the book. Results are anonymous.">
+      Odgovori na kratku anketu prije čitanja knjige. Rezultati su anonimni.
+    </p>
+
+    <div id="preSurveyForm" class="survey-form">
+      <div class="survey-question">
+        <p class="q-text" data-hr="1. Koliko si zadovoljan/na trenutnim političkim sustavom?" data-en="1. How satisfied are you with the current political system?">
+          1. Koliko si zadovoljan/na trenutnim političkim sustavom?
+        </p>
+        <div class="scale-btns" data-key="political_satisfaction">
+          <button class="scale-btn" data-val="1">1</button>
+          <button class="scale-btn" data-val="2">2</button>
+          <button class="scale-btn" data-val="3">3</button>
+          <button class="scale-btn" data-val="4">4</button>
+          <button class="scale-btn" data-val="5">5</button>
+        </div>
+        <div class="scale-labels">
+          <span data-hr="Nezadovoljan" data-en="Unsatisfied">Nezadovoljan</span>
+          <span data-hr="Zadovoljan" data-en="Satisfied">Zadovoljan</span>
+        </div>
+      </div>
+
+      <div class="survey-question">
+        <p class="q-text" data-hr="2. Vjeruješ li da promjena sustava je moguća?" data-en="2. Do you believe system change is possible?">
+          2. Vjeruješ li da promjena sustava je moguća?
+        </p>
+        <div class="scale-btns" data-key="change_belief">
+          <button class="scale-btn" data-val="1">1</button>
+          <button class="scale-btn" data-val="2">2</button>
+          <button class="scale-btn" data-val="3">3</button>
+          <button class="scale-btn" data-val="4">4</button>
+          <button class="scale-btn" data-val="5">5</button>
+        </div>
+        <div class="scale-labels">
+          <span data-hr="Uopće ne" data-en="Not at all">Uopće ne</span>
+          <span data-hr="Svakako" data-en="Absolutely">Svakako</span>
+        </div>
+      </div>
+
+      <div class="survey-question">
+        <p class="q-text" data-hr="3. Koliko se zanimaš za politiku?" data-en="3. How interested are you in politics?">
+          3. Koliko se zanimaš za politiku?
+        </p>
+        <div class="scale-btns" data-key="political_interest">
+          <button class="scale-btn" data-val="1">1</button>
+          <button class="scale-btn" data-val="2">2</button>
+          <button class="scale-btn" data-val="3">3</button>
+          <button class="scale-btn" data-val="4">4</button>
+          <button class="scale-btn" data-val="5">5</button>
+        </div>
+        <div class="scale-labels">
+          <span data-hr="Nimalo" data-en="Not at all">Nimalo</span>
+          <span data-hr="Jako puno" data-en="Very much">Jako puno</span>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitPreSurvey" data-hr="Pošalji odgovore" data-en="Submit answers">
+        Pošalji odgovore
+      </button>
+      <p class="survey-note" data-hr="* Potrebna je prijava za slanje ankete" data-en="* Login required to submit survey">
+        * Potrebna je prijava za slanje ankete
+      </p>
+    </div>
+
+    <div id="preSurveyDone" class="survey-done hidden">
+      <div class="done-icon">✓</div>
+      <p data-hr="Hvala! Tvoji odgovori su zabilježeni." data-en="Thank you! Your answers have been recorded.">Hvala! Tvoji odgovori su zabilježeni.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ DIVIDER ═══ -->
+<div class="section-divider parallax-divider" data-speed="0.25">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ PRE-QUESTIONS ═══ -->
+<section id="pre-questions" class="parallax-section">
+  <div class="parallax-bg questions-bg" id="questionsBg"></div>
+  <div class="section-inner reveal">
+    <p class="section-label" data-hr="Razmisli" data-en="Reflect">Razmisli</p>
+    <h2 class="section-title" data-hr="Pitanja za razmišljanje" data-en="Questions to ponder">Pitanja za razmišljanje</h2>
+    <p class="section-desc" data-hr="Ova pitanja nemaju točnih odgovora. Postoje da potaknu tvoje razmišljanje prije čitanja." data-en="These questions have no right answers. They exist to stimulate your thinking before reading.">
+      Ova pitanja nemaju točnih odgovora. Postoje da potaknu tvoje razmišljanje prije čitanja.
+    </p>
+    <div class="questions-list">
+      <div class="question-item reveal-item">
+        <span class="q-num">01</span>
+        <p data-hr="Što za tebe znači pravedna država?" data-en="What does a just state mean to you?">Što za tebe znači pravedna država?</p>
+      </div>
+      <div class="question-item reveal-item">
+        <span class="q-num">02</span>
+        <p data-hr="Bi li mijenjao nešto u svom okruženju da znaš da neće biti posljedica?" data-en="Would you change something in your environment if you knew there would be no consequences?">Bi li mijenjao nešto u svom okruženju da znaš da neće biti posljedica?</p>
+      </div>
+      <div class="question-item reveal-item">
+        <span class="q-num">03</span>
+        <p data-hr="Je li moguće da svi imaju jednaka osnovna prava, a opet različitu važnost u društvu?" data-en="Is it possible for everyone to have equal basic rights, yet different importance in society?">Je li moguće da svi imaju jednaka osnovna prava, a opet različitu važnost u društvu?</p>
+      </div>
+      <div class="question-item reveal-item">
+        <span class="q-num">04</span>
+        <p data-hr="Kada si zadnji put promijenio mišljenje na temelju argumenata, a ne emocija?" data-en="When did you last change your mind based on arguments, not emotions?">Kada si zadnji put promijenio mišljenje na temelju argumenata, a ne emocija?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ DIVIDER ═══ -->
+<div class="section-divider parallax-divider" data-speed="0.3">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ DOWNLOAD ═══ -->
+<section id="download" class="parallax-section">
+  <div class="parallax-bg download-bg" id="downloadBg"></div>
+  <div class="section-inner reveal">
+    <p class="section-label" data-hr="Besplatno" data-en="Free">Besplatno</p>
+    <h2 class="section-title" data-hr="Pročitaj knjigu" data-en="Read the book">Pročitaj knjigu</h2>
+    <p class="section-desc" data-hr="Iskren Svijet je besplatna knjiga, slobodna za dijeljenje i nadogradnju." data-en="Iskren Svijet is a free book, open for sharing and upgrading.">
+      Iskren Svijet je besplatna knjiga, slobodna za dijeljenje i nadogradnju.
+    </p>
+    <div class="book-card">
+      <div class="book-cover">
+        <div class="book-spine"></div>
+        <div class="book-front">
+          <span class="book-title-small">Iskren Svijet</span>
+          <span class="book-author-small">Karlo Stipanović</span>
+          <span class="book-n">N</span>
+        </div>
+      </div>
+      <div class="book-info">
+        <div class="book-meta">
+          <div class="meta-item">
+            <span class="meta-key" data-hr="Poglavlja" data-en="Chapters">Poglavlja</span>
+            <span class="meta-val">4</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-key" data-hr="Ideologija" data-en="Ideology">Ideologija</span>
+            <span class="meta-val">Neutralizam</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-key" data-hr="Jezik" data-en="Language">Jezik</span>
+            <span class="meta-val">Hrvatski</span>
+          </div>
+        </div>
+        <a href="assets/knjiga.pdf" class="download-btn" id="downloadBtn" download>
+          <span data-hr="Preuzmi PDF" data-en="Download PDF">Preuzmi PDF</span>
+          <div class="btn-arrow">↓</div>
+        </a>
+        <p class="download-note" data-hr="* Knjiga je besplatna i otvorena za uređivanje" data-en="* The book is free and open for editing">
+          * Knjiga je besplatna i otvorena za uređivanje
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ DIVIDER ═══ -->
+<div class="section-divider parallax-divider" data-speed="0.2">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ POST-SURVEY ═══ -->
+<section id="post-survey" class="parallax-section">
+  <div class="parallax-bg post-bg" id="postBg"></div>
+  <div class="section-inner reveal">
+    <p class="section-label" data-hr="Nakon čitanja" data-en="After reading">Nakon čitanja</p>
+    <h2 class="section-title" data-hr="Tvoji dojmovi" data-en="Your impressions">Tvoji dojmovi</h2>
+    <p class="section-desc" data-hr="Kako je knjiga utjecala na tvoje razmišljanje?" data-en="How did the book affect your thinking?">
+      Kako je knjiga utjecala na tvoje razmišljanje?
+    </p>
+    <div id="postSurveyForm" class="survey-form">
+      <div class="survey-question">
+        <p class="q-text" data-hr="1. Koliko te je knjiga potaknula na razmišljanje?" data-en="1. How much did the book stimulate your thinking?">
+          1. Koliko te je knjiga potaknula na razmišljanje?
+        </p>
+        <div class="scale-btns" data-key="post_thinking">
+          <button class="scale-btn" data-val="1">1</button>
+          <button class="scale-btn" data-val="2">2</button>
+          <button class="scale-btn" data-val="3">3</button>
+          <button class="scale-btn" data-val="4">4</button>
+          <button class="scale-btn" data-val="5">5</button>
+        </div>
+        <div class="scale-labels">
+          <span data-hr="Nimalo" data-en="Not at all">Nimalo</span>
+          <span data-hr="Jako puno" data-en="Very much">Jako puno</span>
+        </div>
+      </div>
+
+      <div class="survey-question">
+        <p class="q-text" data-hr="2. Slažeš li se s temeljnim idejama Neutralizma?" data-en="2. Do you agree with the fundamental ideas of Neutralism?">
+          2. Slažeš li se s temeljnim idejama Neutralizma?
+        </p>
+        <div class="scale-btns" data-key="post_agreement">
+          <button class="scale-btn" data-val="1">1</button>
+          <button class="scale-btn" data-val="2">2</button>
+          <button class="scale-btn" data-val="3">3</button>
+          <button class="scale-btn" data-val="4">4</button>
+          <button class="scale-btn" data-val="5">5</button>
+        </div>
+        <div class="scale-labels">
+          <span data-hr="Uopće ne" data-en="Not at all">Uopće ne</span>
+          <span data-hr="Potpuno" data-en="Completely">Potpuno</span>
+        </div>
+      </div>
+
+      <div class="survey-question">
+        <p class="q-text" data-hr="3. Bi li preporučio/la ovu knjigu?" data-en="3. Would you recommend this book?">
+          3. Bi li preporučio/la ovu knjigu?
+        </p>
+        <div class="scale-btns" data-key="post_recommend">
+          <button class="scale-btn" data-val="1">1</button>
+          <button class="scale-btn" data-val="2">2</button>
+          <button class="scale-btn" data-val="3">3</button>
+          <button class="scale-btn" data-val="4">4</button>
+          <button class="scale-btn" data-val="5">5</button>
+        </div>
+        <div class="scale-labels">
+          <span data-hr="Ne bih" data-en="No">Ne bih</span>
+          <span data-hr="Svakako" data-en="Definitely">Svakako</span>
+        </div>
+      </div>
+
+      <div class="survey-question">
+        <p class="q-text" data-hr="4. Tvoj komentar (opcionalno):" data-en="4. Your comment (optional):">
+          4. Tvoj komentar (opcionalno):
+        </p>
+        <textarea id="postComment" class="comment-box" placeholder="" data-hr-placeholder="Napiši slobodno..." data-en-placeholder="Write freely..."></textarea>
+      </div>
+
+      <button class="submit-btn" id="submitPostSurvey" data-hr="Pošalji dojmove" data-en="Submit feedback">
+        Pošalji dojmove
+      </button>
+      <p class="survey-note" data-hr="* Potrebna je prijava za slanje ankete" data-en="* Login required to submit survey">
+        * Potrebna je prijava za slanje ankete
+      </p>
+    </div>
+
+    <div id="postSurveyDone" class="survey-done hidden">
+      <div class="done-icon">✓</div>
+      <p data-hr="Hvala na povratnoj informaciji! Tvoje mišljenje je vrijedno." data-en="Thank you for the feedback! Your opinion is valuable.">Hvala na povratnoj informaciji! Tvoje mišljenje je vrijedno.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ DIVIDER ═══ -->
+<div class="section-divider parallax-divider" data-speed="0.25">
+  <div class="divider-line"></div>
+  <div class="divider-diamond"></div>
+  <div class="divider-line"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ POST-QUESTIONS ═══ -->
+<section id="post-questions" class="parallax-section">
+  <div class="parallax-bg postq-bg" id="postqBg"></div>
+  <div class="section-inner reveal">
+    <p class="section-label" data-hr="Za nastavak" data-en="To continue">Za nastavak</p>
+    <h2 class="section-title" data-hr="Otvorena pitanja" data-en="Open questions">Otvorena pitanja</h2>
+    <p class="section-desc" data-hr="Pitanja na koja knjiga nije dala odgovor. Namjerno." data-en="Questions the book didn't answer. Intentionally.">
+      Pitanja na koja knjiga nije dala odgovor. Namjerno.
+    </p>
+    <div class="questions-list">
+      <div class="question-item reveal-item">
+        <span class="q-num">01</span>
+        <p data-hr="Kako bi izgledao monetarni sustav potpuno neovisan o globalnom tržištu?" data-en="What would a monetary system completely independent of global markets look like?">Kako bi izgledao monetarni sustav potpuno neovisan o globalnom tržištu?</p>
+      </div>
+      <div class="question-item reveal-item">
+        <span class="q-num">02</span>
+        <p data-hr="Može li mala država poput Hrvatske biti geopolitički neutralna u novom hladnom ratu?" data-en="Can a small country like Croatia be geopolitically neutral in the new cold war?">Može li mala država poput Hrvatske biti geopolitički neutralna u novom hladnom ratu?</p>
+      </div>
+      <div class="question-item reveal-item">
+        <span class="q-num">03</span>
+        <p data-hr="Koja je razlika između Neutralizma i tehnikokracije?" data-en="What is the difference between Neutralism and technocracy?">Koja je razlika između Neutralizma i tehnikokracije?</p>
+      </div>
+      <div class="question-item reveal-item">
+        <span class="q-num">04</span>
+        <p data-hr="Može li ideologija koja zahtijeva 80% suglasnosti ikada funkcionirati u praksi?" data-en="Can an ideology that requires 80% consensus ever work in practice?">Može li ideologija koja zahtijeva 80% suglasnosti ikada funkcionirati u praksi?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">N</div>
+    <p data-hr="Neutralizam — Ideologija iskrenosti" data-en="Neutralism — The ideology of honesty">Neutralizam — Ideologija iskrenosti</p>
+    <p class="footer-copy">© 2025 Karlo Stipanović · <span data-hr="Besplatno za dijeljenje" data-en="Free to share">Besplatno za dijeljenje</span></p>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════ LOGIN MODAL ═══ -->
+<div id="loginOverlay" class="modal-overlay hidden">
+  <div class="modal-box">
+    <button class="modal-close" id="closeLogin">✕</button>
+    <h3 class="modal-title" data-hr="Anonimna prijava" data-en="Anonymous login">Anonimna prijava</h3>
+    <p class="modal-desc" data-hr="Upiši ime, prezime i šifru. Ne trebamo email, OIB ni osobne podatke." data-en="Enter your name, surname and password. We don't need email, ID or personal data.">
+      Upiši ime, prezime i šifru. Ne trebamo email, OIB ni osobne podatke.
+    </p>
+
+    <div id="loginForm">
+      <input type="text" id="loginName" class="modal-input" data-hr-placeholder="Ime" data-en-placeholder="First name" placeholder="Ime" maxlength="40"/>
+      <input type="text" id="loginSurname" class="modal-input" data-hr-placeholder="Prezime" data-en-placeholder="Last name" placeholder="Prezime" maxlength="40"/>
+      <input type="password" id="loginPass" class="modal-input" data-hr-placeholder="Šifra (min. 6 znakova)" data-en-placeholder="Password (min. 6 chars)" placeholder="Šifra (min. 6 znakova)" maxlength="60"/>
+      <p class="modal-switch">
+        <span data-hr="Nemaš račun?" data-en="No account?">Nemaš račun?</span>
+        <button class="link-btn" id="toRegister" data-hr="Registriraj se" data-en="Register">Registriraj se</button>
+      </p>
+      <button class="submit-btn" id="doLogin" data-hr="Prijavi se" data-en="Log in">Prijavi se</button>
+      <p class="modal-error hidden" id="loginError"></p>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <input type="text" id="regName" class="modal-input" data-hr-placeholder="Ime" data-en-placeholder="First name" placeholder="Ime" maxlength="40"/>
+      <input type="text" id="regSurname" class="modal-input" data-hr-placeholder="Prezime" data-en-placeholder="Last name" placeholder="Prezime" maxlength="40"/>
+      <input type="password" id="regPass" class="modal-input" data-hr-placeholder="Šifra (min. 6 znakova)" data-en-placeholder="Password (min. 6 chars)" placeholder="Šifra (min. 6 znakova)" maxlength="60"/>
+      <p class="modal-switch">
+        <span data-hr="Već imaš račun?" data-en="Already have an account?">Već imaš račun?</span>
+        <button class="link-btn" id="toLogin" data-hr="Prijavi se" data-en="Log in">Prijavi se</button>
+      </p>
+      <button class="submit-btn" id="doRegister" data-hr="Stvori račun" data-en="Create account">Stvori račun</button>
+      <p class="modal-error hidden" id="regError"></p>
+    </div>
+
+    <div id="loggedInView" class="hidden">
+      <div class="logged-avatar" id="loggedAvatar">K</div>
+      <p class="logged-name" id="loggedName">Korisnik</p>
+      <button class="submit-btn logout-btn" id="doLogout" data-hr="Odjavi se" data-en="Log out">Odjavi se</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module" src="script.js"></script>
+</body>
+</html>
