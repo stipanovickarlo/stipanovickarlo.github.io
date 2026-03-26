@@ -218,6 +218,85 @@
       header { padding: 0 1.25rem; }
       main { padding: 1.5rem 1rem; }
     }
+
+    /* ── QUESTIONS PANEL ── */
+    .q-cards { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .q-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; overflow: hidden;
+    }
+    .q-card-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1rem; padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+    .q-card-meta { display: flex; flex-direction: column; gap: 0.25rem; }
+    .q-card-text { color: var(--text); font-size: 0.95rem; line-height: 1.55; flex: 1; }
+    .q-card-info { color: var(--text-sub); font-size: 0.76rem; }
+    .q-card-votes {
+      display: flex; align-items: center; gap: 0.35rem;
+      color: var(--gold); font-size: 0.82rem; font-weight: 500;
+      flex-shrink: 0; white-space: nowrap;
+    }
+    .q-card-votes svg { opacity: 0.7; }
+
+    .q-card-body { padding: 1.25rem 1.5rem; }
+
+    /* existing answer */
+    .q-answer-existing {
+      background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 4px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+    }
+    .q-answer-label {
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.5rem; display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .q-answer-content { color: var(--text); font-size: 0.9rem; line-height: 1.6; }
+
+    /* reply form */
+    .q-reply-form { display: flex; flex-direction: column; gap: 0.75rem; }
+    .q-reply-textarea {
+      width: 100%; min-height: 90px; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+      font-family: var(--font-body); font-size: 0.88rem; padding: 0.8rem 1rem;
+      resize: vertical; transition: border-color 0.2s; line-height: 1.5;
+    }
+    .q-reply-textarea:focus { outline: none; border-color: var(--gold-dim); }
+    .q-reply-footer {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .q-char-count { color: var(--text-sub); font-size: 0.76rem; }
+    .q-char-count.over { color: var(--red); }
+    .q-reply-actions { display: flex; gap: 0.6rem; }
+    .q-btn-save {
+      background: var(--gold); border: none; color: var(--bg);
+      padding: 0.5rem 1.25rem; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .q-btn-save:hover { opacity: 0.85; }
+    .q-btn-save:disabled { opacity: 0.45; cursor: not-allowed; }
+    .q-btn-delete {
+      background: none; border: 1px solid var(--border); color: var(--text-sub);
+      padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.82rem; transition: all 0.2s;
+    }
+    .q-btn-delete:hover { border-color: var(--red); color: var(--red); }
+    .q-btn-edit {
+      background: none; border: 1px solid var(--border); color: var(--text-sub);
+      padding: 0.25rem 0.7rem; border-radius: 3px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.74rem; transition: all 0.2s;
+    }
+    .q-btn-edit:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    .btn-refresh {
+      background: none; border: 1px solid var(--border); color: var(--text-sub);
+      padding: 0.5rem 0.9rem; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.8rem; transition: all 0.2s;
+    }
+    .btn-refresh:hover { border-color: var(--gold-dim); color: var(--gold); }
   </style>
 </head>
 <body>
@@ -253,6 +332,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="users">Korisnici</button>
       <button class="tab" data-tab="surveys">Ankete</button>
+      <button class="tab" data-tab="questions">Pitanja</button>
     </div>
 
     <!-- Users tab -->
@@ -288,6 +368,18 @@
         <div class="loading"><div class="spinner"></div><br>Učitavanje...</div>
       </div>
     </div>
+
+    <!-- Questions tab -->
+    <div class="tab-content" id="tab-questions">
+      <div class="toolbar">
+        <input class="search" type="text" id="questionSearch" placeholder="Traži pitanje..."/>
+        <span class="count" id="questionCount"></span>
+        <button class="btn-refresh" id="refreshQuestions">↻ Osvježi</button>
+      </div>
+      <div id="questionsGrid">
+        <div class="loading"><div class="spinner"></div><br>Učitavanje...</div>
+      </div>
+    </div>
   </main>
 
 <!-- ── DETAIL MODAL ── -->
@@ -304,7 +396,8 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, writeBatch, increment
+  getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc,
+  writeBatch, increment, addDoc, query, orderBy, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
@@ -373,12 +466,13 @@ document.querySelectorAll(".tab").forEach(tab => {
 });
 
 // ── LOAD DATA ────────────────────────────────────────────────
-let allUsers   = [];
-let allSurveys = [];
+let allUsers     = [];
+let allSurveys   = [];
+let allQuestions = [];
 
 async function loadAll() {
-  await Promise.all([loadStats(), loadUsers(), loadSurveys()]);
-  renderUsers(allUsers); // re-render after both loaded
+  await Promise.all([loadStats(), loadUsers(), loadSurveys(), loadQuestions()]);
+  renderUsers(allUsers);
 }
 
 async function loadStats() {
@@ -612,7 +706,166 @@ document.getElementById("detailModal").addEventListener("click", e => {
 });
 
 
-function showAdminToast(msg) {
+// ── QUESTIONS ────────────────────────────────────────────────
+
+async function loadQuestions() {
+  try {
+    const q = query(collection(db, "questions"), orderBy("votes", "desc"));
+    const snap = await getDocs(q);
+    allQuestions = [];
+    snap.forEach(d => allQuestions.push({ id: d.id, ...d.data() }));
+    renderQuestions(allQuestions);
+  } catch(e) {
+    document.getElementById("questionsGrid").innerHTML =
+      `<p style="color:var(--red);padding:1rem">Greška pri učitavanju pitanja: ${e.message}</p>`;
+  }
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderQuestions(list) {
+  const grid = document.getElementById("questionsGrid");
+  document.getElementById("questionCount").textContent = `${list.length} pitanja`;
+
+  if (!list.length) {
+    grid.innerHTML = `<p style="color:var(--text-sub);padding:1.5rem">Nema pitanja.</p>`;
+    return;
+  }
+
+  const cards = list.map(q => {
+    const user = allUsers.find(u => u.id === q.userId);
+    const userName = user ? `${user.name} ${user.surname}` : (q.userId || "Nepoznat");
+    const dateStr  = q.timestamp?.toDate
+      ? q.timestamp.toDate().toLocaleDateString("hr-HR")
+      : "—";
+    const votes = q.votes || 0;
+
+    const existingAnswer = q.adminReply
+      ? `<div class="q-answer-existing">
+          <div class="q-answer-label">
+            <span>Odgovor admina</span>
+            <button class="q-btn-edit" onclick="editReply('${q.id}')">Uredi</button>
+          </div>
+          <div class="q-answer-content" id="reply-text-${q.id}">${escapeHtml(q.adminReply)}</div>
+        </div>`
+      : "";
+
+    return `
+      <div class="q-card" id="qcard-${q.id}">
+        <div class="q-card-header">
+          <div class="q-card-meta">
+            <span class="q-card-text">${escapeHtml(q.text)}</span>
+            <span class="q-card-info">${escapeHtml(userName)} · ${dateStr}</span>
+          </div>
+          <div class="q-card-votes">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            ${votes}
+          </div>
+        </div>
+        <div class="q-card-body">
+          ${existingAnswer}
+          <div class="q-reply-form" id="reply-form-${q.id}" ${q.adminReply ? 'style="display:none"' : ''}>
+            <textarea
+              class="q-reply-textarea"
+              id="reply-input-${q.id}"
+              maxlength="2000"
+              placeholder="Napiši odgovor... (maks. 2000 znakova)"
+              oninput="updateCharCount('${q.id}')"
+            >${q.adminReply ? escapeHtml(q.adminReply) : ""}</textarea>
+            <div class="q-reply-footer">
+              <span class="q-char-count" id="char-count-${q.id}">0 / 2000</span>
+              <div class="q-reply-actions">
+                <button class="q-btn-delete" onclick="adminDeleteQuestion('${q.id}')">Izbriši pitanje</button>
+                <button class="q-btn-save" id="reply-btn-${q.id}" onclick="saveReply('${q.id}')">
+                  ${q.adminReply ? "Spremi izmjenu" : "Objavi odgovor"}
+                </button>
+              </div>
+            </div>
+          </div>
+          ${q.adminReply ? `
+            <div style="margin-top:0.5rem">
+              <button class="q-btn-delete" onclick="adminDeleteQuestion('${q.id}')">Izbriši pitanje</button>
+            </div>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+
+  grid.innerHTML = `<div class="q-cards">${cards}</div>`;
+
+  // Init char counts for visible textareas
+  list.forEach(q => {
+    if (!q.adminReply) updateCharCount(q.id);
+  });
+}
+
+window.updateCharCount = function(qId) {
+  const ta = document.getElementById(`reply-input-${qId}`);
+  const el = document.getElementById(`char-count-${qId}`);
+  if (!ta || !el) return;
+  const len = ta.value.length;
+  el.textContent = `${len} / 2000`;
+  el.classList.toggle("over", len > 2000);
+};
+
+window.editReply = function(qId) {
+  const existing = document.getElementById(`qcard-${qId}`)?.querySelector(".q-answer-existing");
+  const form     = document.getElementById(`reply-form-${qId}`);
+  const input    = document.getElementById(`reply-input-${qId}`);
+  const btn      = document.getElementById(`reply-btn-${qId}`);
+  if (existing) existing.style.display = "none";
+  if (form)  form.style.display = "";
+  if (btn)   btn.textContent = "Spremi izmjenu";
+  if (input) { updateCharCount(qId); input.focus(); }
+};
+
+window.saveReply = async function(qId) {
+  const input = document.getElementById(`reply-input-${qId}`);
+  const btn   = document.getElementById(`reply-btn-${qId}`);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) { showAdminToast("Odgovor ne može biti prazan."); return; }
+  if (text.length > 2000) { showAdminToast("Odgovor je predugačak (maks. 2000)."); return; }
+
+  btn.disabled = true;
+  try {
+    await updateDoc(doc(db, "questions", qId), { adminReply: text });
+    showAdminToast("Odgovor je objavljen.");
+    await loadQuestions();
+  } catch(e) {
+    showAdminToast("Greška: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+window.adminDeleteQuestion = async function(qId) {
+  if (!confirm("Trajno izbrisati ovo pitanje i sve glasove?")) return;
+  try {
+    await deleteDoc(doc(db, "questions", qId));
+    showAdminToast("Pitanje je izbrisano.");
+    await loadQuestions();
+  } catch(e) {
+    showAdminToast("Greška: " + e.message);
+  }
+};
+
+// Search
+document.getElementById("questionSearch").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  renderQuestions(allQuestions.filter(item =>
+    item.text.toLowerCase().includes(q) ||
+    (item.adminReply || "").toLowerCase().includes(q)
+  ));
+});
+
+// Refresh
+document.getElementById("refreshQuestions").addEventListener("click", () => loadQuestions());
+{
+
   let t = document.getElementById("adminToast");
   if (!t) {
     t = document.createElement("div");
