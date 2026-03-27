@@ -225,14 +225,24 @@ const reveals = document.querySelectorAll(".reveal, .reveal-item");
 
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
-    if (entry.isIntersecting) {
-      const delay = entry.target.classList.contains("reveal-item") ? i * 120 : 0;
-      setTimeout(() => entry.target.classList.add("visible"), delay);
-    }
+    if (!entry.isIntersecting) return;
+    const delay = entry.target.classList.contains("reveal-item") ? i * 120 : 0;
+    setTimeout(() => entry.target.classList.add("visible"), delay);
   });
-}, { threshold: 0.15 });
+}, { threshold: 0.12 });
 
 reveals.forEach(el => revealObserver.observe(el));
+
+// ─────────────────────────────────────────────────────────────
+// HERO TITLE ANIMATION (blur-fade per word, triggered once)
+// ─────────────────────────────────────────────────────────────
+(function initHeroAnim() {
+  const title = document.querySelector(".hero-title");
+  if (!title) return;
+  // Trigger after loading screen clears (~900ms)
+  setTimeout(() => title.classList.add("htx-anim"), 900);
+})();
+
 
 // ─────────────────────────────────────────────────────────────
 // STATISTICS
@@ -900,3 +910,56 @@ if (qwWidget) qwObserver.observe(qwWidget);
 loadStoredUser();
 updateLoginUI();
 checkCompletedSurveys();
+
+// ─────────────────────────────────────────────────────────────
+// LOADING SCREEN
+// ─────────────────────────────────────────────────────────────
+(function initLoadingScreen() {
+  const screen = document.getElementById("loadingScreen");
+  if (!screen) return;
+
+  function dismissLoader() {
+    screen.classList.add("ls-done");
+    setTimeout(() => { screen.style.display = "none"; }, 750);
+  }
+
+  if (document.readyState === "complete") {
+    setTimeout(dismissLoader, 800);
+  } else {
+    window.addEventListener("load", () => setTimeout(dismissLoader, 800));
+  }
+  // Sigurnosni fallback
+  setTimeout(dismissLoader, 5000);
+})();
+
+// ─────────────────────────────────────────────────────────────
+// SCROLL PROGRESS BAR
+// ─────────────────────────────────────────────────────────────
+(function initProgressBar() {
+  const fill = document.getElementById("progressFill");
+  if (!fill) return;
+
+  function updateProgress() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct       = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+    fill.style.width = pct + "%";
+  }
+
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+})();
+
+// ─────────────────────────────────────────────────────────────
+// SERVICE WORKER — nije aktivan (sw.js nije u projektu)
+// Kad dodaš sw.js u root repozitorija, odkomentiraj ovaj blok:
+// ─────────────────────────────────────────────────────────────
+/*
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js", { scope: "/" })
+      .then(reg => console.log("[SW] Registered:", reg.scope))
+      .catch(err => console.warn("[SW] Failed:", err));
+  });
+}
+*/

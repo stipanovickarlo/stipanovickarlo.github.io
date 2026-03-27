@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neutralizam — Vodič za Instalaciju i Deployment</title>
+  <style>
+    :root {
+      --bg: #0B0D12; --surface: #131620; --surface2: #1A1E2E;
+      --gold: #C9A84C; --gold-dim: #8A7035;
+      --text: #E5E3DE; --text-sub: #7A7870; --border: #232737;
+      --green: #4CAF7A; --red: #e07070; --blue: #5B8DEF;
+      --radius: 6px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px; line-height: 1.7; overflow-x: hidden;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── HEADER ── */
+    .site-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2.5rem; display: flex; align-items: center; gap: 1.25rem;
+    }
+    .logo-n { color: var(--gold); font-size: 1.5rem; font-weight: 700; font-family: Georgia, serif; }
+    .logo-rest { color: var(--text); font-size: 1.1rem; font-family: Georgia, serif; }
+    .header-sub { color: var(--text-sub); font-size: 0.82rem; margin-top: 0.15rem; }
+
+    /* ── LAYOUT ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem 2rem; margin-bottom: 3.5rem;
+    }
+    .toc-title { color: var(--gold); font-size: 0.72rem; letter-spacing: 0.18em;
+      text-transform: uppercase; margin-bottom: 1rem; }
+    .toc ol { padding-left: 1.25rem; }
+    .toc li { margin-bottom: 0.4rem; }
+    .toc a { color: var(--text-sub); font-size: 0.9rem; }
+    .toc a:hover { color: var(--gold); text-decoration: none; }
+
+    /* ── SECTION ── */
+    .section { margin-bottom: 3.5rem; }
+    .section-num {
+      color: var(--gold-dim); font-size: 0.72rem; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 0.5rem; display: block;
+    }
+    h2 {
+      font-family: Georgia, serif; font-size: 1.7rem; font-weight: 600;
+      color: var(--text); margin-bottom: 1.25rem; line-height: 1.2;
+      padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);
+    }
+    h3 {
+      font-size: 1rem; font-weight: 600; color: var(--gold);
+      margin: 1.75rem 0 0.75rem; letter-spacing: 0.03em;
+    }
+    p { margin-bottom: 1rem; color: var(--text); }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.4rem; color: var(--text); }
+    li::marker { color: var(--gold-dim); }
+
+    /* ── CODE BLOCKS ── */
+    .code-block {
+      background: #080a0f; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      font-family: 'Consolas', 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.85rem; line-height: 1.6; overflow-x: auto;
+      margin: 1rem 0 1.5rem; position: relative;
+    }
+    .code-block .comment { color: #4a5568; }
+    .code-block .key     { color: #7cb8ff; }
+    .code-block .val     { color: #98d379; }
+    .code-block .str     { color: #e5c07b; }
+    .code-block .kw      { color: #c678dd; }
+    .code-block .dim     { color: var(--text-sub); }
+    code {
+      background: rgba(255,255,255,0.07); border-radius: 3px;
+      padding: 0.1em 0.4em; font-family: 'Consolas', monospace; font-size: 0.85em;
+      color: var(--gold);
+    }
+
+    /* ── CALLOUT BOXES ── */
+    .callout {
+      border-radius: var(--radius); padding: 1rem 1.25rem;
+      margin: 1.25rem 0; display: flex; gap: 0.85rem; align-items: flex-start;
+      font-size: 0.9rem;
+    }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .callout-info { background: rgba(91,141,239,0.1); border: 1px solid rgba(91,141,239,0.25); color: #8db4f5; }
+    .callout-warn { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); color: #d4b46a; }
+    .callout-ok   { background: rgba(76,175,122,0.1); border: 1px solid rgba(76,175,122,0.25); color: #6fcf97; }
+    .callout-red  { background: rgba(224,112,112,0.1); border: 1px solid rgba(224,112,112,0.25); color: #e07070; }
+
+    /* ── FILE TREE ── */
+    .file-tree {
+      background: #080a0f; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      font-family: 'Consolas', monospace; font-size: 0.84rem;
+      line-height: 1.8; margin: 1rem 0 1.5rem;
+    }
+    .ft-dir   { color: #7cb8ff; }
+    .ft-file  { color: var(--text); }
+    .ft-new   { color: var(--green); }
+    .ft-dim   { color: var(--text-sub); }
+
+    /* ── STEP PILLS ── */
+    .steps { display: flex; flex-direction: column; gap: 0; margin: 1rem 0; }
+    .step {
+      display: flex; gap: 1.25rem; padding: 1.1rem 0;
+      border-bottom: 1px solid rgba(35,39,55,0.6);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(201,168,76,0.15); border: 1px solid var(--gold-dim);
+      color: var(--gold); font-size: 0.78rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 0.1rem;
+    }
+    .step-body h4 { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .step-body p  { font-size: 0.88rem; color: var(--text-sub); margin: 0; }
+
+    /* ── PLATFORM GRID ── */
+    .platform-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem; margin: 1rem 0 1.5rem;
+    }
+    .platform-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem;
+    }
+    .platform-card h4 { color: var(--gold); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .platform-card p  { color: var(--text-sub); font-size: 0.82rem; margin: 0; line-height: 1.5; }
+
+    /* ── CHECKLIST ── */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.5rem 0; border-bottom: 1px solid rgba(35,39,55,0.5);
+      font-size: 0.9rem;
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .check { color: var(--green); flex-shrink: 0; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block; padding: 0.15rem 0.55rem; border-radius: 3px;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .badge-new { background: rgba(76,175,122,0.15); color: var(--green); }
+    .badge-req { background: rgba(201,168,76,0.15); color: var(--gold); }
+
+    @media (max-width: 600px) {
+      .site-header { padding: 1.25rem; }
+      .page { padding: 2rem 1.25rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div>
+    <div><span class="logo-n">N</span><span class="logo-rest">eutralizam</span></div>
+    <div class="header-sub">Vodič za Instalaciju &amp; Deployment na .eu domenu</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <p class="toc-title">Sadržaj</p>
+    <ol>
+      <li><a href="#s1">Struktura datoteka</a></li>
+      <li><a href="#s2">Deployment na .eu domenu — Cloudflare Pages (preporučeno)</a></li>
+      <li><a href="#s3">Alternativa: GitHub Pages + Cloudflare DNS</a></li>
+      <li><a href="#s4">Firebase konfiguracija</a></li>
+      <li><a href="#s5">PWA — Instalacija na uređaj</a></li>
+      <li><a href="#s6">SEO &amp; Open Graph — Što još treba napraviti</a></li>
+      <li><a href="#s7">Finalni deployment checklist</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══ 1 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s1">
+    <span class="section-num">01 — Struktura projekta</span>
+    <h2>Struktura datoteka</h2>
+    <p>Svi ovi fajlovi trebaju biti u <strong>korijenskom direktoriju</strong> tvoje domene:</p>
+
+    <div class="file-tree">
+<span class="ft-dir">neutralizam.eu/</span><br>
+├── <span class="ft-file">index.html</span>           <span class="ft-dim">← glavna stranica</span><br>
+├── <span class="ft-file">style.css</span>            <span class="ft-dim">← svi stilovi</span><br>
+├── <span class="ft-file">script.js</span>            <span class="ft-dim">← Firebase + logika</span><br>
+├── <span class="ft-file">manifest.json</span>        <span class="ft-dim">← PWA manifest</span><br>
+├── <span class="ft-new">sw.js</span>                 <span class="ft-dim">← Service Worker (PWA offline)</span><br>
+├── <span class="ft-new">offline.html</span>          <span class="ft-dim">← offline fallback stranica</span><br>
+├── <span class="ft-file">robots.txt</span>           <span class="ft-dim">← SEO crawling pravila</span><br>
+├── <span class="ft-file">sitemap.xml</span>          <span class="ft-dim">← SEO sitemap</span><br>
+├── <span class="ft-file">nadzor-ks2025.html</span>   <span class="ft-dim">← admin panel</span><br>
+└── <span class="ft-dir">assets/</span><br>
+    ├── <span class="ft-file">logo.png</span>          <span class="ft-dim">← ikona (min. 512×512px)</span><br>
+    ├── <span class="ft-new">og-image.png</span>       <span class="ft-dim">← Open Graph slika (1200×630px)</span><br>
+    ├── <span class="ft-new">screenshot-wide.png</span> <span class="ft-dim">← PWA screenshot desktop (1280×720)</span><br>
+    ├── <span class="ft-new">screenshot-mobile.png</span> <span class="ft-dim">← PWA screenshot mobile (390×844)</span><br>
+    └── <span class="ft-file">knjiga.docx</span>       <span class="ft-dim">← knjiga za preuzimanje</span>
+    </div>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <span>Zelenom bojom označene datoteke trebaš kreirati/pribaviti ručno. <code>og-image.png</code> je slika 1200×630px koja se prikazuje pri dijeljenju linka (npr. na WhatsAppu). Može biti screenshot naslovnice ili custom grafika.</span>
+    </div>
+  </section>
+
+  <!-- ═══ 2 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s2">
+    <span class="section-num">02 — Preporučeni hosting</span>
+    <h2>Deployment na .eu domenu — Cloudflare Pages</h2>
+
+    <p><strong>Cloudflare Pages</strong> je besplatan, izuzetno brz (edge CDN) i radi savršeno s Firebase-om. Idealan za statičke stranice kao što je Neutralizam.</p>
+
+    <h3>Korak po korak</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Stvori GitHub repozitorij</h4>
+          <p>Idi na <a href="https://github.com/new" target="_blank">github.com/new</a> → stvori novi <strong>privatni</strong> repozitorij naziva <code>neutralizam</code>. Upload svih datoteka.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Cloudflare Pages — poveži repozitorij</h4>
+          <p>Idi na <a href="https://pages.cloudflare.com" target="_blank">pages.cloudflare.com</a> → <strong>Create a project</strong> → <strong>Connect to Git</strong> → odaberi GitHub repo <code>neutralizam</code>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Build postavke</h4>
+          <p>Sve ostavi prazno — nema build commanda ni output direktorija (čisti statički HTML). Klikni <strong>Save and Deploy</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Povežu .eu domenu</h4>
+          <p>U Cloudflare Pages → <strong>Custom domains</strong> → unesi <code>neutralizam.eu</code>. Cloudflare automatski postavi DNS i HTTPS.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Kupi .eu domenu</h4>
+          <p>Preporučujem direktno kroz <a href="https://www.cloudflare.com/products/registrar/" target="_blank">Cloudflare Registrar</a> — nema markup-a, samo stvarna cijena. Alternativno: <a href="https://www.namecheap.com" target="_blank">Namecheap</a> ili <a href="https://domains.google" target="_blank">Google Domains</a>. Prosječna cijena: ~8–12€/god.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h4>Automatski deploy pri svakom push-u</h4>
+          <p>Nakon što promijeniš datoteku i push-aš na GitHub, Cloudflare Pages automatski redeploya u roku ~30 sekundi.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-ok">
+      <span class="callout-icon">✓</span>
+      <span>Cloudflare Pages automatski dodaje HTTPS, HTTP/2, globalnu CDN mrežu i GZIP kompresiju. Sve besplatno, bez limita posjeta.</span>
+    </div>
+  </section>
+
+  <!-- ═══ 3 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s3">
+    <span class="section-num">03 — Alternativa</span>
+    <h2>GitHub Pages + Cloudflare DNS</h2>
+    <p>Ako već imaš .eu domenu negdje drugdje:</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Uključi GitHub Pages</h4>
+          <p>Repozitorij → <strong>Settings → Pages → Branch: main → / (root)</strong> → Save.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Dodaj CNAME datoteku</h4>
+          <p>U korijenskom direktoriju repozitorija napravi datoteku <code>CNAME</code> (bez ekstenzije) s jednim retkom:</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="val">neutralizam.eu</span></div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Cloudflare DNS zapisi</h4>
+        <p>U Cloudflare DNS dodaj:</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+<span class="comment"># Tip    Ime    Vrijednost</span><br>
+<span class="key">A</span>       <span class="str">@</span>     <span class="val">185.199.108.153</span><br>
+<span class="key">A</span>       <span class="str">@</span>     <span class="val">185.199.109.153</span><br>
+<span class="key">A</span>       <span class="str">@</span>     <span class="val">185.199.110.153</span><br>
+<span class="key">A</span>       <span class="str">@</span>     <span class="val">185.199.111.153</span><br>
+<span class="key">CNAME</span>   <span class="str">www</span>   <span class="val">tvoj-username.github.io</span>
+    </div>
+  </section>
+
+  <!-- ═══ 4 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s4">
+    <span class="section-num">04 — Firebase</span>
+    <h2>Firebase konfiguracija</h2>
+
+    <h3>Autorizirane domene</h3>
+    <p>Firebase blokira prijavu s nepoznatih domena. Moraš dodati svoju .eu domenu u whitelist:</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Firebase Console</h4>
+          <p>Idi na <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → projekt <strong>neutralizam</strong></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Authentication → Settings → Authorized domains</h4>
+          <p>Klikni <strong>Add domain</strong> i dodaj: <code>neutralizam.eu</code> i <code>www.neutralizam.eu</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Firestore pravila su već postavljena</h4>
+          <p>Tvoja Firebase Security Rules (koje si poslao) su već ispravno konfigurirane za produkciju.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Firestore indeksi (važno za pitanja)</h3>
+    <p>Sortiranje pitanja po glasovima (<code>orderBy("votes", "desc")</code>) zahtijeva kompozitni indeks. Firebase će automatski prikazati link za kreiranje u konzoli (error poruka) pri prvom pokretanju. Alternativno, ručno:</p>
+
+    <div class="code-block">
+<span class="comment"># Firebase Console → Firestore → Indexes → Add index</span><br>
+<span class="key">Collection:</span>  <span class="str">questions</span><br>
+<span class="key">Fields:</span><br>
+  <span class="dim">votes</span>     <span class="val">Descending</span><br>
+  <span class="dim">timestamp</span> <span class="val">Descending</span>
+    </div>
+  </section>
+
+  <!-- ═══ 5 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s5">
+    <span class="section-num">05 — PWA</span>
+    <h2>PWA — Kako instalirati na uređaj</h2>
+
+    <p>Stranica je potpuna PWA aplikacija. Korisnici je mogu instalirati <strong>bez App Storea</strong>, direktno s preglednika.</p>
+
+    <div class="platform-grid">
+      <div class="platform-card">
+        <h4>📱 Android (Chrome)</h4>
+        <p>Otvori <code>neutralizam.eu</code> u Chromeu → tapni <strong>⋮</strong> (izbornik) → <strong>"Dodaj na početni zaslon"</strong> ili se pojavi automatski banner "Instaliraj aplikaciju".</p>
+      </div>
+      <div class="platform-card">
+        <h4>🍎 iPhone / iPad (Safari)</h4>
+        <p>Otvori <code>neutralizam.eu</code> u Safariju → tapni gumb <strong>Dijeli</strong> (↑) → <strong>"Dodaj na početni zaslon"</strong>. Potvrdi tapom na "Dodaj".</p>
+      </div>
+      <div class="platform-card">
+        <h4>🖥️ Desktop Chrome / Edge</h4>
+        <p>U adresnoj traci klikni ikonu <strong>⊕</strong> (desna strana) ili izbornik → <strong>"Instaliraj Neutralizam"</strong>. Pojavljuje se kao zasebna aplikacija.</p>
+      </div>
+      <div class="platform-card">
+        <h4>🪟 Windows (Edge)</h4>
+        <p>Edge automatski prepoznaje PWA → desno od adresne trake pojavi se ikona aplikacije → klikni → <strong>"Instaliraj"</strong>. Dodaje se u Start menu.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ</span>
+      <span>Za potpunu PWA instalabilnost trebaju postojati slike <code>assets/logo.png</code> (min. 512×512px), <code>assets/screenshot-wide.png</code> (1280×720) i <code>assets/screenshot-mobile.png</code> (390×844). Bez screenshotova PWA i dalje radi, ali nema preview u instalacijskom dijalogu.</span>
+    </div>
+
+    <h3>Provjera PWA kvalitete</h3>
+    <p>Nakon deploya otvori Chrome DevTools → <strong>Lighthouse</strong> → pokretni audit. Ciljaj <strong>PWA score 100</strong>, SEO 100, Performance 90+.</p>
+
+    <div class="callout callout-warn">
+      <span class="callout-icon">⚠</span>
+      <span>Service Worker radi <strong>samo na HTTPS</strong> domeni, ne na <code>localhost</code> (osim s <code>--allow-insecure-localhost</code> flagom). Nakon deploya na Cloudflare Pages HTTPS je automatski.</span>
+    </div>
+  </section>
+
+  <!-- ═══ 6 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s6">
+    <span class="section-num">06 — SEO</span>
+    <h2>SEO &amp; Open Graph — Što još treba napraviti</h2>
+
+    <h3>og-image.png — najvažnija stvar</h3>
+    <p>Ova slika se prikazuje pri dijeljenju linka na Facebooku, WhatsAppu, Discordu, iMessageu… Dimenzije: <strong>1200×630px</strong>.</p>
+    <p>Besplatni alati za kreiranje: <a href="https://www.canva.com" target="_blank">Canva</a> (predlošci za "Open Graph" / "Facebook Cover") ili <a href="https://ogimage.org" target="_blank">ogimage.org</a>.</p>
+
+    <p>Spremi kao <code>assets/og-image.png</code> i stavi na server.</p>
+
+    <h3>Google Search Console</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Dodaj stranicu</h4>
+          <p>Idi na <a href="https://search.google.com/search-console" target="_blank">search.google.com/search-console</a> → Add property → unesi <code>https://neutralizam.eu/</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Verifikacija putem DNS-a</h4>
+          <p>Google daje TXT zapis koji dodaješ u Cloudflare DNS → verifikacija je automatska u roku par minuta.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Pošalji sitemap</h4>
+          <p>Search Console → Sitemaps → unesi <code>https://neutralizam.eu/sitemap.xml</code> → Submit.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Facebook / Meta Sharing Debugger</h3>
+    <p>Nakon što postaviš <code>og-image.png</code>, provjeri prikaz linka na: <a href="https://developers.facebook.com/tools/debug/" target="_blank">developers.facebook.com/tools/debug</a> — unesi URL i klikni "Scrape Again" za osvježavanje cachea.</p>
+  </section>
+
+  <!-- ═══ 7 ════════════════════════════════════════════════════ -->
+  <section class="section" id="s7">
+    <span class="section-num">07 — Checklist</span>
+    <h2>Finalni deployment checklist</h2>
+
+    <ul class="checklist">
+      <li><span class="check">✓</span> <span><code>index.html</code> — SEO meta tagovi, Open Graph, Structured Data, PWA linkovi</span></li>
+      <li><span class="check">✓</span> <span><code>style.css</code> — loading screen, progress bar, sve komponente</span></li>
+      <li><span class="check">✓</span> <span><code>script.js</code> — Firebase, SW registracija, sve značajke</span></li>
+      <li><span class="check">✓</span> <span><code>manifest.json</code> — icons, shortcuts, screenshots, kategorije</span></li>
+      <li><span class="check">✓</span> <span><code>sw.js</code> — Service Worker v1.2, stale-while-revalidate, offline fallback</span></li>
+      <li><span class="check">✓</span> <span><code>offline.html</code> — N-tematski offline ekran</span></li>
+      <li><span class="check">✓</span> <span><code>robots.txt</code> — admin panel blokiran, sitemap naveden</span></li>
+      <li><span class="check">✓</span> <span><code>sitemap.xml</code> — sve javne stranice navedene</span></li>
+      <li><span class="check">✓</span> <span>Firebase Security Rules — postavljene i testirane</span></li>
+      <li><span class="check">✓</span> <span>Firebase Authorized Domains — <code>neutralizam.eu</code> dodan</span></li>
+      <li>
+        <span style="color:var(--gold-dim);font-size:1.1rem">○</span>
+        <span><code>assets/og-image.png</code> — <strong>kreirati ručno</strong> (1200×630px)</span>
+      </li>
+      <li>
+        <span style="color:var(--gold-dim);font-size:1.1rem">○</span>
+        <span><code>assets/screenshot-wide.png</code> i <code>screenshot-mobile.png</code> — <strong>kreirati ručno</strong></span>
+      </li>
+      <li>
+        <span style="color:var(--gold-dim);font-size:1.1rem">○</span>
+        <span>Google Search Console — dodaj stranicu i pošalji sitemap</span>
+      </li>
+      <li>
+        <span style="color:var(--gold-dim);font-size:1.1rem">○</span>
+        <span>Kupi domenu <code>neutralizam.eu</code> i povežu s Cloudflare Pages</span>
+      </li>
+      <li>
+        <span style="color:var(--gold-dim);font-size:1.1rem">○</span>
+        <span>Firestore kompozitni indeks za <code>questions</code> kolekciju (votes desc)</span>
+      </li>
+    </ul>
+
+    <div class="callout callout-ok">
+      <span class="callout-icon">✓</span>
+      <span><strong>Sve datoteke su produkcijski spremnne.</strong> Jedino što moraš ručno napraviti je kupnja domene, kreiranje OG slike i Google Search Console verifikacija.</span>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

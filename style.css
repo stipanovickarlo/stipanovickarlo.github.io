@@ -40,6 +40,101 @@ body {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
 
+/* ─── PROGRESS BAR ─── */
+#progressBar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  z-index: 9999;
+  background: transparent;
+  pointer-events: none;
+}
+#progressFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold), #f0d080);
+  transition: width 0.1s linear;
+  box-shadow: 0 0 8px rgba(201,168,76,0.6);
+}
+
+/* ─── LOADING SCREEN ─── */
+#loadingScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.65s ease;
+}
+#loadingScreen.ls-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ls-spinner {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Faint track ring */
+.ls-spinner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid rgba(201,168,76,0.14);
+}
+/* Rotating arc */
+.ls-spinner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-top-color: var(--gold);
+  border-right-color: rgba(201,168,76,0.35);
+  animation: lsSpin 0.9s linear infinite;
+}
+@keyframes lsSpin {
+  to { transform: rotate(360deg); }
+}
+.ls-logo {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  border-radius: 50%;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* ─── HERO TITLE ANIMATION ─── */
+@keyframes heroWordIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+.hero-title.htx-anim > span {
+  display: inline-block;
+  animation: heroWordIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+}
+.hero-title.htx-anim em span {
+  display: inline-block;
+  animation: heroWordIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+}
+
 /* ─── NAVBAR ─── */
 #navbar {
   position: fixed;
@@ -203,7 +298,6 @@ body {
   height: 8px;
   border: 1px solid var(--gold-dim);
   transform: rotate(45deg);
-  margin: 0 1.5rem;
   flex-shrink: 0;
 }
 
@@ -776,19 +870,106 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
 /* ─── UTILITIES ─── */
 .hidden { display: none !important; }
 
-/* ─── RESPONSIVE ─── */
-@media (max-width: 768px) {
-  #navbar { padding: 0 1.25rem; }
-  .nav-links { display: none; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .book-card { flex-direction: column; gap: 2rem; }
-  .section-inner { padding: 4rem 1.25rem; }
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile · Tablet · Desktop · TV
+═══════════════════════════════════════════════════════════════ */
+
+/* ── TV / Ultra-wide (1600px+) ── */
+@media (min-width: 1600px) {
+  .section-inner      { max-width: 1000px; padding: 8rem 3rem; }
+  .hero-title         { font-size: clamp(5rem, 7vw, 8rem); }
+  .hero-sub           { font-size: 1.25rem; max-width: 600px; }
+  .stat-number        { font-size: 4.5rem; }
+  .section-title      { font-size: clamp(2.5rem, 4vw, 4.5rem); }
+  .stat-card          { padding: 3rem 2.5rem; }
+  .book-card          { gap: 6rem; }
+  .qw-title           { font-size: 2.8rem; }
+  .modal-box          { max-width: 520px; }
+  #navbar             { height: 72px; font-size: 1rem; }
+  .nav-links a        { font-size: 0.9rem; }
+  .nav-links          { gap: 3rem; }
+  .ls-spinner         { width: 150px; height: 150px; }
+  .ls-logo            { width: 90px; height: 90px; }
 }
 
-@media (max-width: 480px) {
-  .scale-btns { gap: 0.4rem; }
-  .scale-btn { width: 38px; height: 38px; }
+/* ── Large Desktop (1200px – 1599px) — baseline, already fine ── */
+
+/* ── Tablet landscape (1025px – 1199px) ── */
+@media (max-width: 1199px) and (min-width: 1025px) {
+  .section-inner { max-width: 720px; }
+  .book-card     { gap: 3rem; }
+  .stats-grid    { gap: 1.25rem; }
 }
+
+/* ── Tablet portrait (768px – 1024px) ── */
+@media (max-width: 1024px) and (min-width: 768px) {
+  #navbar         { padding: 0 2rem; }
+  .nav-links      { gap: 1.75rem; }
+  .nav-links a    { font-size: 0.8rem; }
+  .section-inner  { padding: 5rem 2rem; }
+  .hero-title     { font-size: clamp(3rem, 7vw, 5rem); }
+  .stats-grid     { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .stat-number    { font-size: 3rem; }
+  .book-card      { gap: 2.5rem; }
+  .qw-title       { font-size: 1.75rem; }
+  .social-links   { max-width: 100%; }
+}
+
+/* ── Mobile large (481px – 767px) ── */
+@media (max-width: 767px) {
+  #navbar              { padding: 0 1.25rem; height: 56px; }
+  .nav-links           { display: none; }
+  .nav-right           { gap: 0.5rem; }
+  .login-btn           { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+  .hero-title          { font-size: clamp(2.8rem, 9vw, 4rem); }
+  .hero-sub            { font-size: 1rem; }
+  .section-inner       { padding: 4rem 1.25rem; }
+  .section-title       { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+  .stats-grid          { grid-template-columns: 1fr; gap: 1rem; }
+  .stat-card           { padding: 1.75rem 1.5rem; }
+  .stat-number         { font-size: 2.8rem; }
+  .survey-form         { gap: 2rem; }
+  .submit-btn          { width: 100%; text-align: center; justify-content: center; }
+  .book-card           { flex-direction: column; gap: 2rem; align-items: flex-start; }
+  .book-cover          { align-self: center; }
+  .modal-box           { padding: 2rem 1.5rem; }
+  .social-links        { gap: 0.75rem; }
+  .social-card         { padding: 1rem 1.25rem; gap: 1rem; }
+  .stranka-content     { flex-direction: column; gap: 2rem; }
+  .stranka-logo        { width: 120px; height: 120px; }
+  .settings-box        { max-width: 100%; }
+  .qw-input-row        { flex-direction: column; }
+  .qw-submit-btn       { width: 100%; justify-content: center; margin-top: 0; height: auto; padding: 0.8rem 1.25rem; }
+  .qw-title            { font-size: 1.5rem; }
+  .hero-content        { padding-top: 56px; }
+}
+
+/* ── Mobile small (≤480px) ── */
+@media (max-width: 480px) {
+  .hero-title          { font-size: clamp(2.2rem, 10vw, 3.2rem); }
+  .scale-btns          { gap: 0.4rem; }
+  .scale-btn           { width: 38px; height: 38px; font-size: 0.8rem; }
+  .book-front          { width: 140px; height: 190px; }
+  .download-btn        { width: 100%; justify-content: center; }
+  .modal-box           { padding: 1.5rem 1.25rem; margin: 0.5rem; }
+  .settings-row        { gap: 0.4rem; }
+  .setting-chip        { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+  .font-row .setting-chip { font-size: 0.75rem; }
+  .stat-number         { font-size: 2.4rem; }
+  .section-title       { font-size: clamp(1.6rem, 8vw, 2.2rem); }
+  .ls-spinner          { width: 100px; height: 100px; }
+  .ls-logo             { width: 58px; height: 58px; }
+  .social-card         { gap: 0.75rem; padding: 0.875rem 1rem; }
+}
+
+/* ── Touch devices — remove hover transforms ── */
+@media (hover: none) {
+  .stat-card:hover     { transform: none; }
+  .social-card:hover   { transform: none; }
+  .submit-btn:hover    { transform: none; }
+  .qw-submit-btn:hover { transform: none; }
+}
+
 
 /* ─── SOCIAL LINKS ─── */
 .social-links {
@@ -911,33 +1092,6 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
 .back-btn:hover { color: var(--gold); }
 
 /* ─── MOBILE ─── */
-@media (max-width: 768px) {
-  #navbar { padding: 0 1.25rem; }
-  .nav-links { display: none; }
-  .nav-right { gap: 0.5rem; }
-  .login-btn { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
-  .stats-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .stat-card { padding: 1.75rem 1.5rem; }
-  .stat-number { font-size: 2.8rem; }
-  .book-card { flex-direction: column; gap: 2rem; align-items: flex-start; }
-  .book-cover { align-self: center; }
-  .section-inner { padding: 4rem 1.25rem; }
-  .section-title { font-size: clamp(1.8rem, 7vw, 2.8rem); }
-  .survey-form { gap: 2rem; }
-  .submit-btn { width: 100%; text-align: center; justify-content: center; }
-  .modal-box { padding: 2rem 1.5rem; }
-  .social-links { gap: 0.75rem; }
-  .social-card { padding: 1rem 1.25rem; gap: 1rem; }
-}
-@media (max-width: 480px) {
-  .scale-btns { gap: 0.4rem; }
-  .scale-btn { width: 38px; height: 38px; font-size: 0.8rem; }
-  .hero-title { font-size: clamp(2.2rem, 10vw, 3.5rem); }
-  .book-front { width: 140px; height: 190px; }
-  .download-btn { width: 100%; justify-content: center; }
-  .modal-box { padding: 1.5rem 1.25rem; margin: 0.5rem; }
-}
-
 /* ─── SCROLL SNAP DIVIDERS FIX ─── */
 .section-divider {
   scroll-snap-align: none;
@@ -1378,15 +1532,4 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
   background: linear-gradient(90deg, var(--border) 25%, rgba(0,0,0,0.06) 50%, var(--border) 75%);
   background-size: 200% 100%;
   animation: qwShimmer 1.4s infinite;
-}
-
-@media (max-width: 480px) {
-  .settings-row { gap: 0.4rem; }
-  .setting-chip { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
-  .font-row .setting-chip { font-size: 0.75rem; }
-}
-
-@media (max-width: 768px) {
-  .qw-input-row { flex-direction: column; }
-  .qw-submit-btn { width: 100%; justify-content: center; margin-top: 0; height: auto; padding: 0.8rem 1.25rem; }
 }

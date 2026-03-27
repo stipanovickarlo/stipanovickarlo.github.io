@@ -3,12 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- ═══ PRIMARY SEO ═══ -->
   <title>Neutralizam — Iskren Svijet</title>
+  <meta name="description" content="Neutralizam je nova ideologija utemeljena na iskrenosti. Pročitaj besplatnu knjigu Iskren Svijet i pridruži se zajednici koja želi bolju Hrvatsku." />
+  <meta name="keywords" content="neutralizam, iskren svijet, hrvatska politika, nova ideologija, iskrenost, hvaljena hrvatska, karlo stipanović" />
+  <meta name="author" content="Karlo Stipanović" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://stipanovickarlo.github.io/neutralizam/" />
+
+  <!-- ═══ OPEN GRAPH (Facebook, Discord, WhatsApp…) ═══ -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://stipanovickarlo.github.io/neutralizam/" />
+  <meta property="og:title"       content="Neutralizam — Iskren Svijet" />
+  <meta property="og:description" content="Nova ideologija utemeljena na jednoj jedinstvenoj premisi — iskrenosti. Pročitaj besplatnu knjigu i pridruži se pokretu." />
+  <meta property="og:image"       content="https://stipanovickarlo.github.io/neutralizam/assets/logo.png" />
+  <meta property="og:image:width"  content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:locale"      content="hr_HR" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:site_name"   content="Neutralizam" />
+
+  <!-- ═══ TWITTER / X CARD ═══ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:url"         content="https://stipanovickarlo.github.io/neutralizam/" />
+  <meta name="twitter:title"       content="Neutralizam — Iskren Svijet" />
+  <meta name="twitter:description" content="Nova ideologija utemeljena na jednoj jedinstvenoj premisi — iskrenosti." />
+  <meta name="twitter:image"       content="https://stipanovickarlo.github.io/neutralizam/assets/logo.png" />
+
+  <!-- ═══ PWA ═══ -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0B0D12" id="themeColorMeta" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Neutralizam" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <link rel="icon" type="image/png" sizes="32x32"  href="assets/logo.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/logo.png" />
+
+  <!-- ═══ STRUCTURED DATA (JSON-LD) ═══ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Neutralizam",
+    "url": "https://stipanovickarlo.github.io/neutralizam/",
+    "description": "Nova ideologija utemeljena na iskrenosti.",
+    "author": {
+      "@type": "Person",
+      "name": "Karlo Stipanović"
+    },
+    "inLanguage": ["hr", "en", "de"],
+    "potentialAction": {
+      "@type": "ReadAction",
+      "target": "https://stipanovickarlo.github.io/neutralizam/#download"
+    }
+  }
+  </script>
+
+  <!-- ═══ FONTS ═══ -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════ PROGRESS BAR ═══ -->
+<div id="progressBar"><div id="progressFill"></div></div>
+
+<!-- ═══════════════════════════════════════════ LOADING SCREEN ═══ -->
+<div id="loadingScreen" aria-hidden="true">
+  <div class="ls-spinner">
+    <img src="assets/logo.png" class="ls-logo" alt="" />
+  </div>
+</div>
 
 <!-- ═══════════════════════════════════════════ NAVIGATION ═══ -->
 <nav id="navbar">
@@ -216,7 +285,7 @@
             <span class="meta-val">Hrvatski</span>
           </div>
         </div>
-        <a href="assets/knjiga.docx" class="download-btn" id="downloadBtn" download>
+        <a href="assets/Iskren Svijet.docx" class="download-btn" id="downloadBtn" download>
           <span data-hr="Preuzmi Word" data-en="Download Word" data-de="Word herunterladen">Preuzmi Word</span>
           <div class="btn-arrow">↓</div>
         </a>
@@ -384,14 +453,14 @@
       Zajednica utemeljena na načelima Neutralizma. Mjesto gdje ideje postaju akcija — bez stranačkih igara, bez lažnih obećanja. Samo iskreni ljudi koji žele bolju Hrvatsku.
     </p>
     <div class="social-links">
-      <a href="#" class="social-card" id="link-instagram" target="_blank" rel="noopener">
+      <a href="https://www.instagram.com/hvaljenahrvatska/" class="social-card" id="link-instagram" target="_blank" rel="noopener">
         <div class="social-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/></svg>
         </div>
         <div class="social-info"><span class="social-name">Instagram</span><span class="social-handle">@hvaljenahrvatska</span></div>
         <div class="social-arrow">→</div>
       </a>
-      <a href="#" class="social-card" id="link-facebook" target="_blank" rel="noopener">
+      <a href="https://www.facebook.com/profile.php?id=61577442249154" class="social-card" id="link-facebook" target="_blank" rel="noopener">
         <div class="social-icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         </div>
@@ -407,7 +476,7 @@
         <div class="social-info"><span class="social-name">Discord</span><span class="social-handle">Hvaljena Hrvatska</span></div>
         <div class="social-arrow">→</div>
       </a>
-      <a href="#" class="social-card" id="link-whatsapp" target="_blank" rel="noopener">
+      <a href="https://chat.whatsapp.com/KmzsjZXjAW3EkV6AAmJqOl" class="social-card" id="link-whatsapp" target="_blank" rel="noopener">
         <div class="social-icon">
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
@@ -570,5 +639,44 @@
 
 <!-- Firebase SDK -->
 <script type="module" src="script.js"></script>
+
+<!-- ═══ PROGRESS BAR + LOADING SCREEN ═══ -->
+<script>
+  // ── Progress bar driven by scroll ──
+  (function() {
+    const fill = document.getElementById("progressFill");
+    function updateProgress() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
+      fill.style.width = pct + "%";
+    }
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+  })();
+
+  // ── Loading screen ──
+  (function() {
+    const ls = document.getElementById("loadingScreen");
+    function dismiss() {
+      ls.classList.add("ls-done");
+      setTimeout(() => ls.remove(), 700);
+    }
+    if (document.readyState === "complete") {
+      setTimeout(dismiss, 900);
+    } else {
+      window.addEventListener("load", () => setTimeout(dismiss, 900));
+    }
+  })();
+
+  // ── Service Worker ──
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js")
+        .then(r => console.log("SW registered:", r.scope))
+        .catch(e => console.warn("SW registration failed:", e));
+    });
+  }
+</script>
 </body>
 </html>
