@@ -1533,3 +1533,735 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
   background-size: 200% 100%;
   animation: qwShimmer 1.4s infinite;
 }
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   HAMBURGER MENU
+═══════════════════════════════════════════════════════════════ */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  padding: 7px 8px;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+.hamburger-btn:hover { border-color: var(--gold-dim); }
+.hamburger-btn span {
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: var(--text-sub);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s, background 0.2s;
+  transform-origin: center;
+}
+.hamburger-btn.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); background: var(--gold); }
+.hamburger-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger-btn.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); background: var(--gold); }
+
+@media (max-width: 767px) {
+  .hamburger-btn { display: flex; }
+}
+
+/* Mobile menu */
+.mobile-menu { display: none; }
+.mobile-menu.open { display: block; }
+
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 149;
+  animation: fadeIn 0.2s ease;
+}
+.mobile-menu-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(80vw, 280px);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 150;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.25s cubic-bezier(0.22,1,0.36,1);
+  overflow-y: auto;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+.mobile-menu-close {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: color 0.2s;
+  padding: 0.25rem;
+}
+.mobile-menu-close:hover { color: var(--gold); }
+.mobile-menu-panel ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.mobile-menu-panel ul li {
+  border-bottom: 1px solid var(--border);
+}
+.mobile-menu-panel ul li:last-child { border-bottom: none; }
+.mobile-menu-panel ul a {
+  display: block;
+  padding: 1rem 0.25rem;
+  color: var(--text-sub);
+  text-decoration: none;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  transition: color 0.2s, padding-left 0.2s;
+}
+.mobile-menu-panel ul a:hover { color: var(--gold); padding-left: 0.5rem; }
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTIFICATION BELL
+═══════════════════════════════════════════════════════════════ */
+.notif-btn {
+  position: relative;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.notif-btn:hover { border-color: var(--gold); color: var(--gold); }
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--gold);
+  color: var(--bg);
+  font-size: 0.62rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+  border: 2px solid var(--bg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INBOX PANEL
+═══════════════════════════════════════════════════════════════ */
+.inbox-panel { display: contents; }
+.inbox-panel.hidden .inbox-backdrop,
+.inbox-panel.hidden .inbox-drawer { display: none; }
+
+.inbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 180;
+  animation: fadeIn 0.2s ease;
+}
+.inbox-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(92vw, 380px);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 181;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.28s cubic-bezier(0.22,1,0.36,1);
+}
+.inbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.inbox-title {
+  font-family: var(--font-disp);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.inbox-close {
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0.25rem;
+}
+.inbox-close:hover { color: var(--text); }
+.inbox-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.inbox-loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+.inbox-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: lsSpin 0.8s linear infinite;
+}
+.inbox-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  transition: border-color 0.2s;
+  cursor: default;
+}
+.inbox-item.unread {
+  border-left: 3px solid var(--gold);
+  background: rgba(201,168,76,0.04);
+}
+.inbox-item-type {
+  font-size: 0.67rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+}
+.inbox-item-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+.inbox-item-body {
+  font-size: 0.84rem;
+  color: var(--text-sub);
+  line-height: 1.55;
+}
+.inbox-item-date {
+  font-size: 0.72rem;
+  color: var(--text-sub);
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+.inbox-empty {
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 0.88rem;
+  padding: 3rem 1rem;
+  font-style: italic;
+}
+.inbox-section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  padding: 0.5rem 0.25rem 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
+}
+
+/* ── Inbox tabs ── */
+.inbox-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.inbox-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-sub);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.75rem 0.5rem;
+  cursor: pointer;
+  transition: color 0.18s, border-color 0.18s;
+  margin-bottom: -1px;
+}
+.inbox-tab:hover { color: var(--text); }
+.inbox-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ── Login prompt inside messages tab ── */
+.inbox-login-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem;
+  gap: 0.5rem;
+}
+.inbox-login-btn {
+  background: var(--gold);
+  border: none;
+  color: var(--bg);
+  padding: 0.65rem 2rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+.inbox-login-btn:hover { opacity: 0.85; }
+
+/* ═══════════════════════════════════════════════════════════════
+   GDPR PRIVOLA — checkbox u registracijskoj formi
+═══════════════════════════════════════════════════════════════ */
+.gdpr-check-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(201,168,76,0.03);
+  transition: border-color 0.2s, background 0.2s;
+  user-select: none;
+}
+.gdpr-check-label:hover {
+  border-color: var(--gold-dim);
+  background: rgba(201,168,76,0.06);
+}
+/* Hide native checkbox */
+.gdpr-check-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+/* Custom box */
+.gdpr-check-box {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  background: rgba(255,255,255,0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: border-color 0.18s, background 0.18s;
+  position: relative;
+}
+/* Checkmark tick via pseudo */
+.gdpr-check-box::after {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 9px;
+  border: 2px solid transparent;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+  transition: border-color 0.15s;
+}
+/* Checked state */
+.gdpr-check-label input:checked ~ .gdpr-check-box {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.gdpr-check-label input:checked ~ .gdpr-check-box::after {
+  border-color: var(--bg);
+}
+/* Focus ring on keyboard nav */
+.gdpr-check-label input:focus-visible ~ .gdpr-check-box {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.gdpr-check-text {
+  font-size: 0.78rem;
+  color: var(--text-sub);
+  line-height: 1.55;
+}
+/* Submit button disabled state */
+#doRegister:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WEB SHARE BUTTON
+═══════════════════════════════════════════════════════════════ */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 400;
+  transition: border-color 0.2s, color 0.2s;
+  margin-top: 0.75rem;
+}
+.share-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+/* ═══════════════════════════════════════════════════════════════
+   ACCESSIBILITY — Focus indicators
+═══════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* Remove outline for mouse users */
+:focus:not(:focus-visible) { outline: none; }
+
+/* Skip-to-content link (screen readers) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  background: var(--gold);
+  color: var(--bg);
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 99999;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 0; }
+
+/* ═══════════════════════════════════════════════════════════════
+   PREFERS-REDUCED-MOTION
+═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal, .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero-title.htx-anim > span,
+  .hero-title.htx-anim em span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT STYLESHEET
+═══════════════════════════════════════════════════════════════ */
+@media print {
+  /* Hide interactive/nav elements */
+  #progressBar, #loadingScreen, #navbar, #gdprBanner,
+  #settingsOverlay, #loginOverlay, #inboxPanel,
+  .mobile-menu, .scroll-cta, .cta-arrow,
+  .submit-btn, .share-btn, .download-btn,
+  .scale-btns, .comment-box, footer,
+  .section-divider, .qw-input-row, .qw-search-row,
+  .qw-note, .qw-vote-btn { display: none !important; }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+  .parallax-section {
+    min-height: auto !important;
+    padding: 2rem 0 !important;
+    page-break-inside: avoid;
+  }
+  .parallax-bg { display: none !important; }
+  .section-inner { padding: 1rem 0 !important; max-width: 100% !important; }
+  .hero-content { padding-top: 0 !important; }
+  .hero-title { color: #111 !important; font-size: 28pt !important; }
+  .section-title { color: #111 !important; font-size: 18pt !important; }
+  .section-label { color: #555 !important; }
+  .section-desc, p { color: #333 !important; }
+  .stat-card { border: 1px solid #ccc !important; break-inside: avoid; }
+  .stat-number { color: #555 !important; }
+  .survey-question { break-inside: avoid; }
+  .qw-item { border: 1px solid #ccc !important; break-inside: avoid; }
+  .qw-admin-reply { border: 1px solid #aaa !important; background: #f5f5f5 !important; }
+  .social-card { border: 1px solid #ccc !important; }
+  a { color: #555 !important; text-decoration: underline; }
+  .reveal, .reveal-item { opacity: 1 !important; transform: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BACK TO TOP
+═══════════════════════════════════════════════════════════════ */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 500;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+  transition: opacity 0.3s, transform 0.3s, box-shadow 0.2s;
+  opacity: 1;
+}
+.back-to-top[hidden] {
+  display: flex !important; /* override hidden attr with opacity trick */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+}
+.back-to-top:not([hidden]) {
+  opacity: 1;
+  transform: translateY(0);
+}
+.back-to-top:hover {
+  box-shadow: 0 6px 28px rgba(201,168,76,0.5);
+  transform: translateY(-2px);
+}
+@media (max-width: 767px) {
+  .back-to-top { bottom: 1.25rem; right: 1.25rem; width: 40px; height: 40px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   QUESTION CHAR COUNTER
+═══════════════════════════════════════════════════════════════ */
+.qw-counter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+.qw-char-counter {
+  font-size: 0.72rem;
+  color: var(--text-sub);
+  font-family: var(--font-body);
+  white-space: nowrap;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.qw-char-counter.qw-counter-over {
+  color: #e07070;
+  font-weight: 500;
+}
+/* qw-note is now inside counter-row so remove its standalone margin */
+.qw-counter-row .qw-note {
+  margin-bottom: 0;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGGED-IN META (birth year + reg date)
+═══════════════════════════════════════════════════════════════ */
+.logged-meta {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-sub);
+  margin-top: -0.75rem;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHECKBOX POP ANIMATION
+═══════════════════════════════════════════════════════════════ */
+@keyframes checkPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.gdpr-check-box.gdpr-check-pop {
+  animation: checkPop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Smooth checkbox tick draw */
+.gdpr-check-label input:checked ~ .gdpr-check-box::after {
+  border-color: var(--bg);
+  animation: tickDraw 0.18s ease-out;
+}
+@keyframes tickDraw {
+  from { border-right-width: 0; border-bottom-width: 0; }
+  to   { border-right-width: 2px; border-bottom-width: 2px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VOTED BUTTON CURSOR
+═══════════════════════════════════════════════════════════════ */
+.qw-vote-btn.voted {
+  cursor: help;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEARCH SKELETON — in search list
+═══════════════════════════════════════════════════════════════ */
+#qwSearchList .qw-skeleton {
+  height: 58px;
+  background: linear-gradient(90deg, var(--border) 25%, rgba(255,255,255,0.04) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--radius);
+  animation: qwShimmer 1.4s infinite;
+  margin-bottom: 0.6rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DEVICE OPTIMIZATIONS — Dopune za sve uređaje
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Number input — ukloni spinner strelice ── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ── Bolje dodirne mete (min 44px) na mobilnim ── */
+@media (max-width: 767px) {
+  .scale-btn        { min-width: 44px; min-height: 44px; }
+  .nav-links a      { min-height: 44px; display: flex; align-items: center; }
+  .gdpr-check-label { padding: 1rem; }
+  .back-to-top      { width: 48px; height: 48px; }
+  .notif-btn, .settings-btn { width: 38px; height: 38px; }
+  .modal-input      { font-size: 16px; } /* sprječava auto-zoom na iOS */
+  .qw-search-input  { font-size: 16px; }
+  .qw-textarea      { font-size: 16px; }
+  .inp              { font-size: 16px; }
+}
+
+/* ── Landscape mobitel ── */
+@media (max-width: 767px) and (orientation: landscape) {
+  .parallax-section { min-height: auto; padding: 3rem 0; }
+  .hero-content     { padding-top: 70px; gap: 1rem; }
+  .hero-emblem      { width: 70px; height: 70px; }
+  .hero-title       { font-size: clamp(2rem, 8vw, 3rem); }
+  .section-inner    { padding: 2.5rem 1.25rem; }
+  .ls-spinner       { width: 80px; height: 80px; }
+  .ls-logo          { width: 48px; height: 48px; }
+}
+
+/* ── iPad Pro / Large tablet (1024px square) ── */
+@media (min-width: 1024px) and (max-width: 1024px) {
+  .section-inner { max-width: 760px; }
+}
+
+/* ── Visoki ekrani (TV s više od 900px visine) ── */
+@media (min-height: 900px) and (min-width: 1200px) {
+  .parallax-section { min-height: 85vh; }
+  .section-inner    { padding: 7rem 2rem; }
+}
+
+/* ── Performansne optimizacije ── */
+.parallax-bg       { will-change: transform; contain: layout style; }
+.stat-card         { contain: layout style; }
+.inbox-drawer      { will-change: transform; }
+.mobile-menu-panel { will-change: transform; }
+.modal-box         { will-change: transform, opacity; }
+
+/* ── Bolji text rendering ── */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Sprječaj horizontalni scroll na svim uređajima ── */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* ── Modal: fullscreen na malim ekranima ── */
+@media (max-width: 480px) {
+  .modal-overlay  { padding: 0; align-items: flex-end; }
+  .modal-box      {
+    border-radius: 16px 16px 0 0;
+    margin: 0;
+    max-height: 92vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 100%;
+    padding: 1.75rem 1.25rem 2rem;
+  }
+  .settings-box   { border-radius: 16px 16px 0 0; }
+}
+
+/* ── Inbox drawer — fullscreen na mobitelu ── */
+@media (max-width: 480px) {
+  .inbox-drawer {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+/* ── Scroll snap — isključi na landscape mobitelu ── */
+@media (max-width: 767px) and (orientation: landscape) {
+  html { scroll-snap-type: none; }
+}
+
+/* ── Visoki kontrast (accessibility) ── */
+@media (forced-colors: active) {
+  .submit-btn, .gdpr-accept, .back-to-top { forced-color-adjust: none; }
+  :focus-visible { outline: 3px solid Highlight; }
+}
+
+/* ── Štedi bateriju na uređajima koji traže ── */
+@media (prefers-reduced-motion: reduce) {
+  .parallax-bg { transform: none !important; }
+  .ls-spinner::after { animation: none !important; }
+}

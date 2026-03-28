@@ -1,8 +1,7 @@
 User-agent: *
 Allow: /
-
-# Blokiraj admin panel od indeksiranja
+ 
 Disallow: /nadzor-ks2025.html
-Disallow: /assets/
-
-Sitemap: https://neutralizam.eu/sitemap.xml
+ 
+Sitemap: https://stipanovickarlo.github.io/neutralizam/sitemap.xml
+ 

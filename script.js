@@ -62,7 +62,9 @@ function showToast(msg) {
 // SETTINGS — Language, Theme, Font, Zoom
 // ─────────────────────────────────────────────────────────────
 let currentLang  = localStorage.getItem("lang")  || "hr";
-let currentTheme = localStorage.getItem("theme") || "dark";
+// Detect OS color scheme on first visit (no stored preference)
+const _osPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+let currentTheme = localStorage.getItem("theme") || (_osPrefersDark ? "dark" : "light");
 let currentFont  = localStorage.getItem("font")  || "playfair";
 let currentZoom  = parseInt(localStorage.getItem("zoom") || "100");
 
@@ -347,67 +349,72 @@ function generateUID() {
   return 'u_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
 }
 
-function makeUserId(name, surname) {
-  return (name + "_" + surname).toLowerCase().replace(/\s+/g, "").replace(/[^a-z_\u00C0-\u017E]/g, "");
+function makeUserId(name, surname, year) {
+  const base = (name + "_" + surname + (year ? "_" + year : ""))
+    .toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9_\u00C0-\u017E]/g, "");
+  return base;
 }
 
-async function loginUser(name, surname, pass) {
+async function loginUser(name, surname, year, pass) {
   if (!firebaseReady) {
-    currentUser = { id: generateUID(), name, surname };
+    currentUser = { id: generateUID(), name, surname, birthYear: year };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  const loginKey = makeUserId(name, surname);
+  const loginKey = makeUserId(name, surname, year);
   const snap = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
 
   if (snap.empty) {
-    return { ok: false, msg: currentLang === "hr" ? "Korisnik ne postoji. Registriraj se." : "User not found. Please register." };
+    return { ok: false, msg: currentLang === "hr" ? "Korisnik ne postoji. Provjeri podatke ili se registriraj." : currentLang === "de" ? "Benutzer nicht gefunden. Bitte registrieren." : "User not found. Check details or register." };
   }
 
   const userDoc = snap.docs[0];
   const data = userDoc.data();
 
   if (data.passHash !== hashPass(pass)) {
-    return { ok: false, msg: currentLang === "hr" ? "Pogrešna šifra." : "Wrong password." };
+    return { ok: false, msg: currentLang === "hr" ? "Pogrešna šifra." : currentLang === "de" ? "Falsches Passwort." : "Wrong password." };
   }
 
-  currentUser = { id: userDoc.id, name: data.name, surname: data.surname };
+  currentUser = { id: userDoc.id, name: data.name, surname: data.surname, birthYear: data.birthYear };
   localStorage.setItem("user", JSON.stringify(currentUser));
   return { ok: true };
 }
 
-async function registerUser(name, surname, pass) {
+async function registerUser(name, surname, year, pass) {
   if (pass.length < 6) {
-    return { ok: false, msg: currentLang === "hr" ? "Šifra mora imati min. 6 znakova." : "Password must be at least 6 chars." };
+    return { ok: false, msg: currentLang === "hr" ? "Šifra mora imati min. 6 znakova." : currentLang === "de" ? "Passwort mind. 6 Zeichen." : "Password must be at least 6 chars." };
+  }
+  const yearNum = parseInt(year);
+  if (!yearNum || yearNum < 1900 || yearNum > 2015) {
+    return { ok: false, msg: currentLang === "hr" ? "Unesi valjanu godinu rođenja (1900–2015)." : currentLang === "de" ? "Gib ein gültiges Geburtsjahr ein (1900–2015)." : "Enter a valid birth year (1900–2015)." };
   }
 
   if (!firebaseReady) {
     const uid = generateUID();
-    currentUser = { id: uid, name, surname };
+    currentUser = { id: uid, name, surname, birthYear: yearNum };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  const loginKey = makeUserId(name, surname);
+  const loginKey = makeUserId(name, surname, year);
 
-  // Check if loginKey already active (existing non-deleted user)
-  const { query: q2, where: w2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
   const existing = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
   if (!existing.empty) {
-    return { ok: false, msg: currentLang === "hr" ? "Ime već postoji. Prijavi se." : "Username exists. Log in instead." };
+    return { ok: false, msg: currentLang === "hr" ? "Korisnik s tim podacima već postoji. Prijavi se." : currentLang === "de" ? "Benutzer existiert bereits. Bitte anmelden." : "User already exists. Please log in." };
   }
 
   const uid = generateUID();
   await setDoc(doc(db, "users", uid), {
     name,
     surname,
+    birthYear: yearNum,
     loginKey,
     passHash: hashPass(pass),
     createdAt: serverTimestamp()
   });
 
-  currentUser = { id: uid, name, surname };
+  currentUser = { id: uid, name, surname, birthYear: yearNum };
   localStorage.setItem("user", JSON.stringify(currentUser));
   return { ok: true };
 }
@@ -420,16 +427,20 @@ function loadStoredUser() {
 }
 
 function updateLoginUI() {
-  const btn = document.getElementById("openLogin");
+  const btn  = document.getElementById("openLogin");
   if (currentUser) {
     btn.dataset.hr = currentUser.name;
     btn.dataset.en = currentUser.name;
+    btn.dataset.de = currentUser.name;
     btn.textContent = currentUser.name;
   } else {
     btn.dataset.hr = "Prijava";
     btn.dataset.en = "Login";
-    btn.textContent = currentLang === "hr" ? "Prijava" : "Login";
+    btn.dataset.de = "Anmeldung";
+    btn.textContent = currentLang === "de" ? "Anmeldung" : currentLang === "en" ? "Login" : "Prijava";
   }
+  // Refresh badge whenever auth state changes
+  setTimeout(() => window._refreshInboxBadge?.(), 200);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -441,8 +452,8 @@ const regForm   = document.getElementById("registerForm");
 const loggedView= document.getElementById("loggedInView");
 
 function clearModalInputs() {
-  ["loginName","loginSurname","loginPass",
-   "regName","regSurname","regPass",
+  ["loginName","loginSurname","loginYear","loginPass",
+   "regName","regSurname","regYear","regPass",
    "adminEmailInput","adminPassInput"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
@@ -470,6 +481,31 @@ function showModal() {
     loggedView.classList.remove("hidden");
     document.getElementById("loggedAvatar").textContent = currentUser.name[0].toUpperCase();
     document.getElementById("loggedName").textContent = currentUser.name + " " + currentUser.surname;
+
+    // Show birth year + fetch registration date
+    const metaEl = document.getElementById("loggedMeta");
+    if (metaEl) {
+      let metaText = "";
+      if (currentUser.birthYear) metaText += (currentLang === "de" ? "Geb. " : currentLang === "en" ? "Born " : "Roj. ") + currentUser.birthYear;
+      metaEl.textContent = metaText || "";
+      metaEl.classList.toggle("hidden", !metaText);
+
+      // Fetch registration date from Firestore async
+      if (firebaseReady && currentUser.id) {
+        getDoc(doc(db, "users", currentUser.id)).then(snap => {
+          if (!snap.exists()) return;
+          const d = snap.data();
+          const reg = d.createdAt?.toDate?.();
+          if (reg) {
+            const regStr = reg.toLocaleDateString(currentLang === "de" ? "de-DE" : currentLang === "en" ? "en-GB" : "hr-HR");
+            const byLabel = currentLang === "de" ? "Reg. " : currentLang === "en" ? "Joined " : "Registriran ";
+            metaEl.textContent = (metaText ? metaText + " · " : "") + byLabel + regStr;
+            metaEl.classList.remove("hidden");
+          }
+        }).catch(() => {});
+      }
+    }
+
     const statusEl = document.getElementById("accountStatusMsg");
     if (statusEl) {
       if (currentUser.deactivated) {
@@ -563,16 +599,17 @@ document.getElementById("toLogin").addEventListener("click", () => {
 document.getElementById("doLogin").addEventListener("click", async () => {
   const name    = document.getElementById("loginName").value.trim();
   const surname = document.getElementById("loginSurname").value.trim();
+  const year    = document.getElementById("loginYear").value.trim();
   const pass    = document.getElementById("loginPass").value;
   const errEl   = document.getElementById("loginError");
 
-  if (!name || !surname || !pass) {
-    errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : "Fill all fields.";
+  if (!name || !surname || !year || !pass) {
+    errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : currentLang === "de" ? "Fülle alle Felder aus." : "Fill all fields.";
     errEl.classList.remove("hidden");
     return;
   }
 
-  const result = await loginUser(name, surname, pass);
+  const result = await loginUser(name, surname, year, pass);
   if (result.ok) {
     errEl.classList.add("hidden");
     updateLoginUI();
@@ -587,16 +624,23 @@ document.getElementById("doLogin").addEventListener("click", async () => {
 document.getElementById("doRegister").addEventListener("click", async () => {
   const name    = document.getElementById("regName").value.trim();
   const surname = document.getElementById("regSurname").value.trim();
+  const year    = document.getElementById("regYear").value.trim();
   const pass    = document.getElementById("regPass").value;
   const errEl   = document.getElementById("regError");
+  const gdprOk  = document.getElementById("gdprCheck")?.checked;
 
-  if (!name || !surname || !pass) {
-    errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : "Fill all fields.";
+  if (!gdprOk) {
+    errEl.textContent = currentLang === "de" ? "Bitte akzeptiere die Datenschutzerklärung." : currentLang === "en" ? "Please accept the privacy consent." : "Moraš prihvatiti privolu za obradu podataka.";
+    errEl.classList.remove("hidden");
+    return;
+  }
+  if (!name || !surname || !year || !pass) {
+    errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : currentLang === "de" ? "Fülle alle Felder aus." : "Fill all fields.";
     errEl.classList.remove("hidden");
     return;
   }
 
-  const result = await registerUser(name, surname, pass);
+  const result = await registerUser(name, surname, year, pass);
   if (result.ok) {
     errEl.classList.add("hidden");
     updateLoginUI();
@@ -747,13 +791,17 @@ function renderQuestionItem(data, docId) {
       </div>`
     : "";
 
+  const voteTitle = alreadyVoted
+    ? (currentLang === "de" ? "Bereits abgestimmt" : currentLang === "en" ? "Already voted" : "Već si glasao/la")
+    : (currentLang === "de" ? "Abstimmen" : currentLang === "en" ? "Vote" : "Glasaj");
+
   div.innerHTML = `
     <div class="qw-item-inner">
       <div class="qw-item-text">${escapeHtml(data.text)}</div>
       ${replyHtml}
     </div>
-    <button class="qw-vote-btn ${alreadyVoted ? "voted" : ""}" data-id="${docId}" title="Glasaj">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    <button class="qw-vote-btn ${alreadyVoted ? "voted" : ""}" data-id="${docId}" title="${voteTitle}" aria-label="${voteTitle}">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
       <span class="qw-vote-count">${votes}</span>
     </button>
   `;
@@ -905,6 +953,460 @@ const qwObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 const qwWidget = document.querySelector(".questions-widget");
 if (qwWidget) qwObserver.observe(qwWidget);
+
+
+// ─────────────────────────────────────────────────────────────
+// HAMBURGER MENU
+// ─────────────────────────────────────────────────────────────
+(function initHamburger() {
+  const btn      = document.getElementById("hamburgerBtn");
+  const menu     = document.getElementById("mobileMenu");
+  const backdrop = document.getElementById("mobileMenuBackdrop");
+  const closeBtn = document.getElementById("mobileMenuClose");
+  if (!btn || !menu) return;
+
+  function openMenu() {
+    menu.classList.add("open");
+    menu.setAttribute("aria-hidden", "false");
+    btn.classList.add("open");
+    btn.setAttribute("aria-expanded", "true");
+    document.body.style.overflow = "hidden";
+  }
+  function closeMenu() {
+    menu.classList.remove("open");
+    menu.setAttribute("aria-hidden", "true");
+    btn.classList.remove("open");
+    btn.setAttribute("aria-expanded", "false");
+    document.body.style.overflow = "";
+  }
+
+  btn.addEventListener("click", () => menu.classList.contains("open") ? closeMenu() : openMenu());
+  backdrop?.addEventListener("click", closeMenu);
+  closeBtn?.addEventListener("click", closeMenu);
+  // Close on link click
+  menu.querySelectorAll("a").forEach(a => a.addEventListener("click", closeMenu));
+  // Close on Escape
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && menu.classList.contains("open")) closeMenu(); });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// GDPR CHECKBOX — aktivan samo pri registraciji
+// ─────────────────────────────────────────────────────────────
+(function initGdprCheck() {
+  const check  = document.getElementById("gdprCheck");
+  const regBtn = document.getElementById("doRegister");
+  if (!check || !regBtn) return;
+
+  // Sync checkbox → button disabled state
+  check.addEventListener("change", () => {
+    regBtn.disabled = !check.checked;
+  });
+
+  // Reset checkbox & button whenever register form becomes visible
+  const toRegisterBtn = document.getElementById("toRegister");
+  toRegisterBtn?.addEventListener("click", () => {
+    check.checked  = false;
+    regBtn.disabled = true;
+  });
+})();
+
+
+// ─────────────────────────────────────────────────────────────
+// WEB SHARE
+// ─────────────────────────────────────────────────────────────
+(function initWebShare() {
+  const btn = document.getElementById("shareBtn");
+  if (!btn) return;
+
+  // Hide if share API not supported (show nothing, not an error)
+  if (!navigator.share) {
+    btn.style.display = "none";
+    return;
+  }
+
+  btn.addEventListener("click", async () => {
+    const titles = { hr: "Neutralizam — Iskren Svijet", en: "Neutralism — An Honest World", de: "Neutralismus — Eine Ehrliche Welt" };
+    const texts  = {
+      hr: "Nova ideologija utemeljena na iskrenosti. Pročitaj besplatnu knjigu.",
+      en: "A new ideology built on honesty. Read the free book.",
+      de: "Eine neue Ideologie, gegründet auf Ehrlichkeit. Lies das kostenlose Buch."
+    };
+    try {
+      await navigator.share({
+        title: titles[currentLang] || titles.hr,
+        text:  texts[currentLang]  || texts.hr,
+        url:   window.location.href
+      });
+    } catch (e) {
+      if (e.name !== "AbortError") showToast("Dijeljenje nije uspjelo.");
+    }
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// NOTIFICATION INBOX — dva taba: Updateovi (svima) + Poruke (prijavljeni)
+// ─────────────────────────────────────────────────────────────
+(function initInbox() {
+  const bellBtn  = document.getElementById("notifBtn");
+  const badge    = document.getElementById("notifBadge");
+  const panel    = document.getElementById("inboxPanel");
+  const backdrop = document.getElementById("inboxBackdrop");
+  const closeBtn = document.getElementById("inboxClose");
+  const body     = document.getElementById("inboxBody");
+  const tabUpd   = document.getElementById("inboxTabUpdates");
+  const tabMsg   = document.getElementById("inboxTabMessages");
+  if (!bellBtn || !panel) return;
+
+  let activeTab = "updates"; // "updates" | "messages"
+
+  // ── Open / Close ──────────────────────────────────────────
+  function openInbox() {
+    panel.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    renderTab(activeTab);
+  }
+  function closeInbox() {
+    panel.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  bellBtn.addEventListener("click", openInbox);
+  backdrop?.addEventListener("click", closeInbox);
+  closeBtn?.addEventListener("click", closeInbox);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeInbox(); });
+
+  // ── Tab switching ─────────────────────────────────────────
+  tabUpd?.addEventListener("click", () => switchTab("updates"));
+  tabMsg?.addEventListener("click", () => switchTab("messages"));
+
+  function switchTab(tab) {
+    activeTab = tab;
+    tabUpd?.classList.toggle("active", tab === "updates");
+    tabMsg?.classList.toggle("active", tab === "messages");
+    renderTab(tab);
+  }
+
+  // ── Seen tracking ─────────────────────────────────────────
+  const SEEN_KEY_UPD = "notifSeenUpd";
+  function getSeenUpd()  { try { return JSON.parse(localStorage.getItem(SEEN_KEY_UPD) || "[]"); } catch { return []; } }
+  function markSeenUpd(ids) {
+    const existing = getSeenUpd();
+    localStorage.setItem(SEEN_KEY_UPD, JSON.stringify([...new Set([...existing, ...ids])]));
+  }
+
+  function getMsgSeenKey() { return currentUser ? `notifSeenMsg_${currentUser.id}` : null; }
+  function getSeenMsg() {
+    const k = getMsgSeenKey(); if (!k) return [];
+    try { return JSON.parse(localStorage.getItem(k) || "[]"); } catch { return []; }
+  }
+  function markSeenMsg(ids) {
+    const k = getMsgSeenKey(); if (!k) return;
+    const existing = getSeenMsg();
+    localStorage.setItem(k, JSON.stringify([...new Set([...existing, ...ids])]));
+  }
+
+  // ── Badge ─────────────────────────────────────────────────
+  function updateBadge(count) {
+    if (!badge) return;
+    if (count > 0) { badge.textContent = count > 9 ? "9+" : count; badge.classList.remove("hidden"); }
+    else            { badge.classList.add("hidden"); }
+  }
+
+  window._refreshInboxBadge = async function() {
+    if (!firebaseReady) return;
+    let unread = 0;
+    const seenUpd = getSeenUpd();
+    const seenMsg = getSeenMsg();
+
+    try {
+      // Updates — visible to all
+      const aSnap = await getDocs(query(collection(db, "announcements"), orderBy("timestamp", "desc"), limit(30)));
+      aSnap.forEach(d => { if (!seenUpd.includes(d.id)) unread++; });
+
+      // Messages — only if logged in
+      if (currentUser) {
+        const qSnap = await getDocs(query(collection(db, "questions"), where("userId", "==", currentUser.id)));
+        qSnap.forEach(d => { if (d.data().adminReply && !seenMsg.includes(d.id)) unread++; });
+      }
+    } catch(e) { /* silent */ }
+
+    updateBadge(unread);
+  };
+
+  // ── Render tab ────────────────────────────────────────────
+  async function renderTab(tab) {
+    body.innerHTML = `<div class="inbox-loading"><div class="inbox-spinner"></div></div>`;
+
+    if (tab === "updates") await renderUpdates();
+    else                   await renderMessages();
+  }
+
+  // ── UPDATEOVI (svi korisnici) ─────────────────────────────
+  async function renderUpdates() {
+    if (!firebaseReady) {
+      body.innerHTML = `<p class="inbox-empty">Firebase nije spojen.</p>`; return;
+    }
+    const seenUpd = getSeenUpd();
+    const newSeen = [];
+
+    try {
+      const snap = await getDocs(query(collection(db, "announcements"), orderBy("timestamp", "desc"), limit(30)));
+      if (snap.empty) {
+        body.innerHTML = `<p class="inbox-empty">${{ hr:"Nema updateova.", en:"No updates.", de:"Keine Updates." }[currentLang]||"Nema updateova."}</p>`;
+        return;
+      }
+
+      body.innerHTML = "";
+      snap.forEach(d => {
+        const data   = d.data();
+        const isNew  = !seenUpd.includes(d.id);
+        if (isNew) newSeen.push(d.id);
+        const dateStr = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString("hr-HR") : "";
+
+        const el = document.createElement("div");
+        el.className = `inbox-item${isNew ? " unread" : ""}`;
+        el.innerHTML = `
+          <div class="inbox-item-type">${{ hr:"Update", en:"Update", de:"Update" }[currentLang]||"Update"}</div>
+          <div class="inbox-item-title">${escapeHtml(data.title || "")}</div>
+          <div class="inbox-item-body">${escapeHtml(data.body || data.text || "")}</div>
+          ${dateStr ? `<div class="inbox-item-date">${dateStr}</div>` : ""}`;
+        body.appendChild(el);
+      });
+
+      markSeenUpd(newSeen);
+      // Refresh badge after reading updates
+      if (newSeen.length) window._refreshInboxBadge?.();
+    } catch(e) {
+      body.innerHTML = `<p class="inbox-empty">Greška pri učitavanju.</p>`;
+    }
+  }
+
+  // ── PORUKE (samo prijavljeni) ─────────────────────────────
+  async function renderMessages() {
+    if (!currentUser) {
+      // Not logged in — show login prompt
+      const labels = {
+        hr: { info: "Za pregled poruka potrebna je prijava.", btn: "Prijavi se" },
+        en: { info: "Login required to view messages.", btn: "Log in" },
+        de: { info: "Anmeldung erforderlich, um Nachrichten zu sehen.", btn: "Einloggen" }
+      };
+      const l = labels[currentLang] || labels.hr;
+      body.innerHTML = `
+        <div class="inbox-login-prompt">
+          <p class="inbox-empty" style="padding-bottom:1rem">${l.info}</p>
+          <button class="inbox-login-btn" id="inboxGoLogin">${l.btn}</button>
+        </div>`;
+      document.getElementById("inboxGoLogin")?.addEventListener("click", () => {
+        closeInbox();
+        document.getElementById("openLogin")?.click();
+      });
+      return;
+    }
+
+    if (!firebaseReady) {
+      body.innerHTML = `<p class="inbox-empty">Firebase nije spojen.</p>`; return;
+    }
+
+    const seenMsg = getSeenMsg();
+    const newSeen = [];
+
+    try {
+      const snap = await getDocs(query(collection(db, "questions"), where("userId", "==", currentUser.id)));
+      const items = [];
+      snap.forEach(d => {
+        if (!d.data().adminReply) return;
+        const isNew = !seenMsg.includes(d.id);
+        if (isNew) newSeen.push(d.id);
+        items.push({ id: d.id, data: d.data(), isNew });
+      });
+
+      if (!items.length) {
+        body.innerHTML = `<p class="inbox-empty">${{ hr:"Nema odgovora na tvoja pitanja.", en:"No replies to your questions.", de:"Keine Antworten auf deine Fragen." }[currentLang]||"Nema odgovora."}</p>`;
+        return;
+      }
+
+      // Sort: unread first
+      items.sort((a, b) => (b.isNew - a.isNew));
+
+      body.innerHTML = "";
+      items.forEach(({ id, data, isNew }) => {
+        const dateStr = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString("hr-HR") : "";
+        const el = document.createElement("div");
+        el.className = `inbox-item${isNew ? " unread" : ""}`;
+        el.innerHTML = `
+          <div class="inbox-item-type">${{ hr:"Odgovor na tvoje pitanje", en:"Reply to your question", de:"Antwort auf deine Frage" }[currentLang]||"Odgovor"}</div>
+          <div class="inbox-item-title">${escapeHtml(data.text || "")}</div>
+          <div class="inbox-item-body">${escapeHtml(data.adminReply || "")}</div>
+          ${dateStr ? `<div class="inbox-item-date">${dateStr}</div>` : ""}`;
+        body.appendChild(el);
+      });
+
+      markSeenMsg(newSeen);
+      if (newSeen.length) window._refreshInboxBadge?.();
+    } catch(e) {
+      body.innerHTML = `<p class="inbox-empty">Greška pri učitavanju.</p>`;
+    }
+  }
+
+  // Init badge after page load (user loaded by then)
+  setTimeout(() => window._refreshInboxBadge?.(), 500);
+})();
+
+
+
+
+// ─────────────────────────────────────────────────────────────
+// BACK TO TOP
+// ─────────────────────────────────────────────────────────────
+(function initBackToTop() {
+  const btn = document.getElementById("backToTop");
+  if (!btn) return;
+  window.addEventListener("scroll", () => {
+    btn.hidden = window.scrollY < 300;
+  }, { passive: true });
+  btn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// QUESTION CHAR COUNTER
+// ─────────────────────────────────────────────────────────────
+(function initQwCounter() {
+  const ta  = document.getElementById("qwInput");
+  const el  = document.getElementById("qwCharCounter");
+  if (!ta || !el) return;
+  const MAX = 200;
+  ta.addEventListener("input", () => {
+    const len = ta.value.length;
+    el.textContent = `${len} / ${MAX}`;
+    el.classList.toggle("qw-counter-over", len >= MAX);
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// SURVEY SUBMIT CONFIRMATION
+// ─────────────────────────────────────────────────────────────
+(function initSurveyConfirm() {
+  const msgs = {
+    hr: "Anketa se može predati samo jednom i ne može se poništiti.\nJesi li siguran/na?",
+    en: "The survey can only be submitted once and cannot be undone.\nAre you sure?",
+    de: "Die Umfrage kann nur einmal eingereicht werden und ist unwiderruflich.\nBist du sicher?"
+  };
+  ["submitPreSurvey", "submitPostSurvey"].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener("click", e => {
+      if (!confirm(msgs[currentLang] || msgs.hr)) e.stopImmediatePropagation();
+    }, true); // capture — runs before the existing listener
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// VOTE TOOLTIP (already-voted feedback)
+// ─────────────────────────────────────────────────────────────
+// Injected via renderQuestionItem — tooltip set as title on voted buttons.
+// Also catch click attempts on voted buttons with a toast.
+document.addEventListener("click", e => {
+  const voteBtn = e.target.closest(".qw-vote-btn");
+  if (!voteBtn) return;
+  if (voteBtn.classList.contains("voted")) {
+    e.stopImmediatePropagation();
+    const msgs = { hr: "Već si glasao/la za ovo pitanje.", en: "You already voted for this question.", de: "Du hast bereits für diese Frage gestimmt." };
+    showToast(msgs[currentLang] || msgs.hr);
+  }
+}, true);
+
+// ─────────────────────────────────────────────────────────────
+// SEARCH SKELETON LOADERS
+// ─────────────────────────────────────────────────────────────
+// Show skeletons in search list while awaiting results
+const _origSearchQuestions = searchQuestions;
+window._searchQuestionsPatched = true;
+// Patch: show skeletons before async search runs
+const qwSearchInput = document.getElementById("qwSearch");
+if (qwSearchInput) {
+  qwSearchInput.addEventListener("input", () => {
+    const val = qwSearchInput.value.trim();
+    if (!val) return;
+    const searchList = document.getElementById("qwSearchList");
+    const topSection = document.getElementById("qwTopSection");
+    if (!searchList || !topSection) return;
+    topSection.classList.add("hidden");
+    searchList.classList.remove("hidden");
+    // Show 2 skeleton rows immediately
+    if (searchList.innerHTML === "" || searchList.querySelector(".qw-empty")) {
+      searchList.innerHTML = `<div class="qw-skeleton"></div><div class="qw-skeleton"></div>`;
+    }
+  }, { capture: true }); // runs before the debounced searchQuestions
+}
+
+// ─────────────────────────────────────────────────────────────
+// FIREBASE ERROR BOUNDARY
+// ─────────────────────────────────────────────────────────────
+(function initFirebaseErrorBoundary() {
+  if (firebaseReady) return;
+  // Firebase failed to init — show a subtle persistent banner
+  const banner = document.createElement("div");
+  banner.id = "firebaseErrBanner";
+  banner.style.cssText = [
+    "position:fixed","bottom:0","left:0","right:0","z-index:8500",
+    "background:#1A1E2E","border-top:1px solid #e07070",
+    "color:#e07070","font-size:0.78rem","text-align:center",
+    "padding:0.5rem 1rem","pointer-events:none","font-family:system-ui"
+  ].join(";");
+  const msgs = {
+    hr: "⚠ Baza podataka trenutno nije dostupna. Neke značajke ne rade.",
+    en: "⚠ Database currently unavailable. Some features may not work.",
+    de: "⚠ Datenbank derzeit nicht verfügbar. Einige Funktionen sind deaktiviert."
+  };
+  banner.textContent = msgs[currentLang] || msgs.hr;
+  document.body.appendChild(banner);
+})();
+
+// ─────────────────────────────────────────────────────────────
+// DYNAMIC HTML LANG ATTRIBUTE
+// ─────────────────────────────────────────────────────────────
+(function patchApplyLangForHtmlAttr() {
+  const _orig = applyLang;
+  applyLang = function(lang) {
+    _orig(lang);
+    document.documentElement.lang = lang === "de" ? "de" : lang === "en" ? "en" : "hr";
+  };
+  // Apply immediately for current lang
+  document.documentElement.lang = currentLang === "de" ? "de" : currentLang === "en" ? "en" : "hr";
+})();
+
+// ─────────────────────────────────────────────────────────────
+// SMOOTH SCROLL FOR MOBILE MENU LINKS
+// ─────────────────────────────────────────────────────────────
+(function initSmoothScrollMobile() {
+  const mobileMenu = document.getElementById("mobileMenu");
+  if (!mobileMenu) return;
+  mobileMenu.querySelectorAll("a[href^='#']").forEach(a => {
+    a.addEventListener("click", e => {
+      const target = document.querySelector(a.getAttribute("href"));
+      if (!target) return;
+      e.preventDefault();
+      // Close menu first, then scroll
+      setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 320);
+    });
+  });
+})();
+
+// ─────────────────────────────────────────────────────────────
+// CHECKBOX ANIMATION (already handled by CSS transition,
+// but add tactile class for extra visual feedback)
+// ─────────────────────────────────────────────────────────────
+(function initCheckboxAnim() {
+  const check = document.getElementById("gdprCheck");
+  const box   = document.querySelector(".gdpr-check-box");
+  if (!check || !box) return;
+  check.addEventListener("change", () => {
+    box.classList.add("gdpr-check-pop");
+    setTimeout(() => box.classList.remove("gdpr-check-pop"), 300);
+  });
+})();
 
 
 loadStoredUser();

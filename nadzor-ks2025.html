@@ -297,6 +297,60 @@
       font-family: var(--font-body); font-size: 0.8rem; transition: all 0.2s;
     }
     .btn-refresh:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    /* ── UPDATES TAB ── */
+    .upd-compose {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1.5rem; margin-bottom: 0.5rem;
+    }
+    .upd-compose-title {
+      font-family: var(--font-disp); color: var(--gold);
+      font-size: 1rem; margin-bottom: 1rem;
+    }
+    .upd-title-inp {
+      width: 100%; margin-bottom: 0.75rem; font-size: 0.9rem;
+    }
+    .upd-body-inp {
+      width: 100%; min-height: 110px; resize: vertical;
+      font-size: 0.9rem; line-height: 1.55; margin-bottom: 0;
+    }
+    .upd-compose-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 0.75rem; gap: 1rem;
+    }
+    .upd-char-count { color: var(--text-sub); font-size: 0.76rem; }
+    .upd-char-count.over { color: var(--red); }
+    .upd-publish-btn {
+      width: auto; padding: 0.6rem 1.75rem; font-size: 0.85rem; white-space: nowrap;
+    }
+
+    .upd-cards { display: flex; flex-direction: column; gap: 1rem; }
+    .upd-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1.25rem 1.5rem;
+      display: flex; align-items: flex-start; gap: 1.25rem;
+    }
+    .upd-card-body { flex: 1; min-width: 0; }
+    .upd-card-title {
+      font-weight: 500; font-size: 0.95rem; color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+    .upd-card-text {
+      color: var(--text-sub); font-size: 0.85rem; line-height: 1.55;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .upd-card-meta {
+      display: flex; gap: 1rem; margin-top: 0.6rem; flex-wrap: wrap;
+    }
+    .upd-card-date { color: var(--text-sub); font-size: 0.74rem; }
+    .upd-card-expires { color: var(--red); font-size: 0.74rem; }
+    .upd-card-actions { flex-shrink: 0; }
+    .upd-delete-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-sub);
+      padding: 0.35rem 0.85rem; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-body); font-size: 0.78rem; transition: all 0.2s;
+    }
+    .upd-delete-btn:hover { border-color: var(--red); color: var(--red); }
   </style>
 </head>
 <body>
@@ -333,6 +387,7 @@
       <button class="tab active" data-tab="users">Korisnici</button>
       <button class="tab" data-tab="surveys">Ankete</button>
       <button class="tab" data-tab="questions">Pitanja</button>
+      <button class="tab" data-tab="updates">Updateovi</button>
     </div>
 
     <!-- Users tab -->
@@ -380,6 +435,28 @@
         <div class="loading"><div class="spinner"></div><br>Učitavanje...</div>
       </div>
     </div>
+
+    <!-- Updates tab -->
+    <div class="tab-content" id="tab-updates">
+      <!-- New update form -->
+      <div class="upd-compose">
+        <h3 class="upd-compose-title">Novi update</h3>
+        <input type="text" class="inp upd-title-inp" id="updTitle" placeholder="Naslov updatea..." maxlength="120"/>
+        <textarea class="inp upd-body-inp" id="updBody" placeholder="Tekst poruke..." maxlength="1000"></textarea>
+        <div class="upd-compose-footer">
+          <span class="upd-char-count" id="updCharCount">0 / 1000</span>
+          <button class="btn upd-publish-btn" id="updPublish">Objavi update</button>
+        </div>
+      </div>
+      <!-- Existing updates list -->
+      <div class="toolbar" style="margin-top:1.5rem">
+        <span class="count" id="updateCount"></span>
+        <button class="btn-refresh" id="refreshUpdates">↻ Osvježi</button>
+      </div>
+      <div id="updatesGrid">
+        <div class="loading"><div class="spinner"></div><br>Učitavanje...</div>
+      </div>
+    </div>
   </main>
 
 <!-- ── DETAIL MODAL ── -->
@@ -397,7 +474,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc,
-  writeBatch, increment, addDoc, query, orderBy, limit, serverTimestamp
+  writeBatch, increment, addDoc, query, orderBy, limit, serverTimestamp,
+  where, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
@@ -462,6 +540,8 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+    // Lazy-load updates tab on first open
+    if (tab.dataset.tab === "updates") loadUpdates();
   });
 });
 
@@ -474,7 +554,6 @@ async function loadAll() {
   await Promise.all([loadStats(), loadUsers(), loadSurveys(), loadQuestions()]);
   renderUsers(allUsers);
 }
-
 async function loadStats() {
   try {
     const snap = await getDoc(doc(db, "meta", "stats"));
@@ -864,8 +943,9 @@ document.getElementById("questionSearch").addEventListener("input", e => {
 
 // Refresh
 document.getElementById("refreshQuestions").addEventListener("click", () => loadQuestions());
-{
 
+
+function showAdminToast(msg) {
   let t = document.getElementById("adminToast");
   if (!t) {
     t = document.createElement("div");
@@ -890,6 +970,133 @@ window.adminDeleteUser = async function(userId, userName) {
     showAdminToast("Greška: " + e.message);
   }
 };
+
+// ── UPDATES (Announcements) ───────────────────────────────────
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function loadUpdates() {
+  const grid = document.getElementById("updatesGrid");
+  grid.innerHTML = `<div class="loading"><div class="spinner"></div><br>Učitavanje...</div>`;
+
+  try {
+    const snap = await getDocs(query(
+      collection(db, "announcements"),
+      orderBy("timestamp", "desc"),
+      limit(50)
+    ));
+
+    const now = Date.now();
+    const toDelete = [];
+    const items = [];
+
+    snap.forEach(d => {
+      const ts = d.data().timestamp?.toDate?.()?.getTime?.() ?? 0;
+      if (ts && now - ts > THIRTY_DAYS_MS) {
+        toDelete.push(d.id); // expired — queue for deletion
+      } else {
+        items.push({ id: d.id, ...d.data() });
+      }
+    });
+
+    // Auto-delete expired updates silently
+    if (toDelete.length) {
+      const batch = writeBatch(db);
+      toDelete.forEach(id => batch.delete(doc(db, "announcements", id)));
+      await batch.commit().catch(() => {});
+    }
+
+    document.getElementById("updateCount").textContent = `${items.length} updateova`;
+
+    if (!items.length) {
+      grid.innerHTML = `<p style="color:var(--text-sub);padding:1.5rem">Nema objavljenih updateova.</p>`;
+      return;
+    }
+
+    const cards = items.map(item => {
+      const ts       = item.timestamp?.toDate?.();
+      const dateStr  = ts ? ts.toLocaleDateString("hr-HR") : "—";
+      const expiresMs = ts ? (ts.getTime() + THIRTY_DAYS_MS - now) : null;
+      const daysLeft  = expiresMs ? Math.ceil(expiresMs / (24 * 60 * 60 * 1000)) : null;
+      const expiresStr = daysLeft !== null
+        ? `Briše se za ${daysLeft} ${daysLeft === 1 ? "dan" : daysLeft < 5 ? "dana" : "dana"}`
+        : "";
+
+      return `
+        <div class="upd-card" id="upd-${item.id}">
+          <div class="upd-card-body">
+            <div class="upd-card-title">${escapeHtml(item.title || "")}</div>
+            <div class="upd-card-text">${escapeHtml(item.body || item.text || "")}</div>
+            <div class="upd-card-meta">
+              <span class="upd-card-date">Objavljeno: ${dateStr}</span>
+              ${expiresStr ? `<span class="upd-card-expires">⏱ ${expiresStr}</span>` : ""}
+            </div>
+          </div>
+          <div class="upd-card-actions">
+            <button class="upd-delete-btn" onclick="adminDeleteUpdate('${item.id}')">Izbriši</button>
+          </div>
+        </div>`;
+    }).join("");
+
+    grid.innerHTML = `<div class="upd-cards">${cards}</div>`;
+  } catch(e) {
+    grid.innerHTML = `<p style="color:var(--red);padding:1rem">Greška: ${e.message}</p>`;
+  }
+}
+
+window.adminDeleteUpdate = async function(updId) {
+  if (!confirm("Izbrisati ovaj update? Korisnici ga više neće vidjeti.")) return;
+  try {
+    await deleteDoc(doc(db, "announcements", updId));
+    showAdminToast("Update je izbrisan.");
+    await loadUpdates();
+  } catch(e) {
+    showAdminToast("Greška: " + e.message);
+  }
+};
+
+// Publish new update
+document.getElementById("updPublish").addEventListener("click", async () => {
+  const title = document.getElementById("updTitle").value.trim();
+  const body  = document.getElementById("updBody").value.trim();
+  const btn   = document.getElementById("updPublish");
+
+  if (!title) { showAdminToast("Upiši naslov updatea."); return; }
+  if (!body)  { showAdminToast("Upiši tekst poruke."); return; }
+  if (body.length > 1000) { showAdminToast("Tekst je predugačak (maks. 1000 znakova)."); return; }
+
+  btn.disabled = true;
+  btn.textContent = "Objavljujem...";
+  try {
+    await addDoc(collection(db, "announcements"), {
+      title,
+      body,
+      timestamp: serverTimestamp()
+    });
+    document.getElementById("updTitle").value = "";
+    document.getElementById("updBody").value  = "";
+    document.getElementById("updCharCount").textContent = "0 / 1000";
+    showAdminToast("Update je objavljen! Vidljiv svim korisnicima.");
+    await loadUpdates();
+  } catch(e) {
+    showAdminToast("Greška: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Objavi update";
+  }
+});
+
+// Char counter for body textarea
+document.getElementById("updBody").addEventListener("input", () => {
+  const len = document.getElementById("updBody").value.length;
+  const el  = document.getElementById("updCharCount");
+  el.textContent = `${len} / 1000`;
+  el.classList.toggle("over", len > 1000);
+});
+
+// Refresh
+document.getElementById("refreshUpdates").addEventListener("click", () => loadUpdates());
+
 </script>
 </body>
 </html>
