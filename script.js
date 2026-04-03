@@ -334,8 +334,22 @@ document.querySelectorAll(".scale-btns").forEach(group => {
 
 let currentUser = null;
 
-function hashPass(pass) {
-  // Jednostavan hash za demo — u produkciji koristiti bcrypt ili Firebase Auth
+// ─────────────────────────────────────────────────────────────
+// PASSWORD HASHING — SHA-256 + salt (SubtleCrypto, browser-native)
+// Sigurnije od jednostavnog hasha, bez vanjskih ovisnosti.
+// ─────────────────────────────────────────────────────────────
+const PASS_SALT = "nzm_2026_s4lt_k5";
+
+async function hashPass(pass) {
+  const data = new TextEncoder().encode(PASS_SALT + pass);
+  const buf  = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Legacy hash provjera (za stare korisnike registrirane prije nadogradnje)
+function hashPassLegacy(pass) {
   let hash = 0;
   for (let i = 0; i < pass.length; i++) {
     hash = ((hash << 5) - hash) + pass.charCodeAt(i);
@@ -349,41 +363,61 @@ function generateUID() {
   return 'u_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
 }
 
-function makeUserId(name, surname, year) {
-  const base = (name + "_" + surname + (year ? "_" + year : ""))
-    .toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9_\u00C0-\u017E]/g, "");
-  return base;
+// loginKey se hashira SHA-256 — plaintext godina više nije vidljiva u bazi
+async function makeLoginKeyHash(name, surname, year) {
+  const raw  = (name + "|" + surname + "|" + (year || "")).toLowerCase().trim();
+  const data = new TextEncoder().encode(raw);
+  const buf  = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
 }
 
 async function loginUser(name, surname, year, pass) {
   if (!firebaseReady) {
-    currentUser = { id: generateUID(), name, surname, birthYear: year };
+    currentUser = { id: generateUID(), name, surname };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  const loginKey = makeUserId(name, surname, year);
-  const snap = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
+  // Traži po imenu (ne treba godina za prijavu)
+  const nameSnap = await getDocs(query(collection(db, "users"), where("name", "==", name)));
+  const candidates = [];
+  nameSnap.forEach(d => {
+    if (d.data().surname === surname) candidates.push(d);
+  });
 
-  if (snap.empty) {
-    return { ok: false, msg: currentLang === "hr" ? "Korisnik ne postoji. Provjeri podatke ili se registriraj." : currentLang === "de" ? "Benutzer nicht gefunden. Bitte registrieren." : "User not found. Check details or register." };
+  if (!candidates.length) {
+    return { ok: false, msg: currentLang === "hr" ? "Korisnik ne postoji. Provjeri ime i prezime ili se registriraj." : currentLang === "de" ? "Benutzer nicht gefunden. Bitte registrieren." : "User not found. Check name and surname or register." };
   }
 
-  const userDoc = snap.docs[0];
-  const data = userDoc.data();
+  const newHash    = await hashPass(pass);
+  const legacyHash = hashPassLegacy(pass);
 
-  if (data.passHash !== hashPass(pass)) {
-    return { ok: false, msg: currentLang === "hr" ? "Pogrešna šifra." : currentLang === "de" ? "Falsches Passwort." : "Wrong password." };
+  // Provjeri lozinku za sve kandidate (može biti više s istim imenom/prezimenom)
+  for (const userDoc of candidates) {
+    const data = userDoc.data();
+    if (data.passHash === newHash || data.passHash === legacyHash) {
+      if (data.passHash === legacyHash && data.passHash !== newHash) {
+        try { await updateDoc(doc(db, "users", userDoc.id), { passHash: newHash }); } catch(e) {}
+      }
+      currentUser = { id: userDoc.id, name: data.name, surname: data.surname, birthYear: data.birthYear };
+      localStorage.setItem("user", JSON.stringify(currentUser));
+      return { ok: true };
+    }
   }
 
-  currentUser = { id: userDoc.id, name: data.name, surname: data.surname, birthYear: data.birthYear };
-  localStorage.setItem("user", JSON.stringify(currentUser));
-  return { ok: true };
+  return { ok: false, msg: currentLang === "hr" ? "Pogrešna šifra." : currentLang === "de" ? "Falsches Passwort." : "Wrong password." };
 }
 
 async function registerUser(name, surname, year, pass) {
-  if (pass.length < 6) {
-    return { ok: false, msg: currentLang === "hr" ? "Šifra mora imati min. 6 znakova." : currentLang === "de" ? "Passwort mind. 6 Zeichen." : "Password must be at least 6 chars." };
+  const hasLetter = /[a-zA-ZÀ-ž]/.test(pass);
+  const hasDigit  = /[0-9]/.test(pass);
+  if (pass.length < 8 || !hasLetter || !hasDigit) {
+    return { ok: false, msg:
+      currentLang === "hr" ? "Šifra mora imati min. 8 znakova, barem jedno slovo i jedan broj." :
+      currentLang === "de" ? "Passwort mind. 8 Zeichen, min. 1 Buchstabe und 1 Zahl." :
+      "Password must be at least 8 chars with one letter and one number."
+    };
   }
   const yearNum = parseInt(year);
   if (!yearNum || yearNum < 1900 || yearNum > 2015) {
@@ -397,7 +431,7 @@ async function registerUser(name, surname, year, pass) {
     return { ok: true };
   }
 
-  const loginKey = makeUserId(name, surname, year);
+  const loginKey = await makeLoginKeyHash(name, surname, year);
 
   const existing = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
   if (!existing.empty) {
@@ -405,12 +439,13 @@ async function registerUser(name, surname, year, pass) {
   }
 
   const uid = generateUID();
+  const passHash = await hashPass(pass);
   await setDoc(doc(db, "users", uid), {
     name,
     surname,
     birthYear: yearNum,
-    loginKey,
-    passHash: hashPass(pass),
+    loginKey,   // SHA-256 hash — godina nije čitljiva
+    passHash,
     createdAt: serverTimestamp()
   });
 
@@ -565,23 +600,129 @@ document.getElementById("backFromAdmin").addEventListener("click", () => {
   document.getElementById("modeSelect").classList.remove("hidden");
 });
 
+// ── TOTP za admin modal (isti ključ kao nadzor-ks2025.html i totp.html) ──
+const ADMIN_TOTP_SECRET = "KVKFKRCPNZQXI3DJNZSXG43JMFSG65TF";
+
+function adminBase32Decode(s) {
+  const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  s = s.replace(/=+$/, "").toUpperCase();
+  let bits = 0, val = 0, idx = 0;
+  const out = new Uint8Array(Math.floor(s.length * 5 / 8));
+  for (const ch of s) {
+    const i = alpha.indexOf(ch);
+    if (i < 0) continue;
+    val = (val << 5) | i; bits += 5;
+    if (bits >= 8) { out[idx++] = (val >>> (bits - 8)) & 0xff; bits -= 8; }
+  }
+  return out;
+}
+
+async function adminComputeTotp(secret, step) {
+  const key = adminBase32Decode(secret);
+  const msg = new ArrayBuffer(8);
+  new DataView(msg).setUint32(4, step, false);
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
+  );
+  const sig  = new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, msg));
+  const off  = sig[19] & 0x0f;
+  const code = (((sig[off] & 0x7f) << 24) | ((sig[off+1] & 0xff) << 16) |
+                ((sig[off+2] & 0xff) << 8) | (sig[off+3] & 0xff)) % 1000000;
+  return String(code).padStart(6, "0");
+}
+
+async function adminVerifyTotp(input) {
+  const step = Math.floor(Date.now() / 1000 / 30);
+  for (const offset of [0, -1, 1]) {
+    const expected = await adminComputeTotp(ADMIN_TOTP_SECRET, step + offset);
+    if (input === expected) return true;
+  }
+  return false;
+}
+
+// TOTP digit UX — auto-advance, paste, backspace
+(function initAdminTotpDigits() {
+  const digits = Array.from({length:6}, (_, i) => document.getElementById("atd" + i));
+  if (!digits[0]) return;
+
+  digits.forEach((inp, idx) => {
+    inp.addEventListener("input", () => {
+      if (inp.value.length > 1) inp.value = inp.value.slice(-1);
+      if (inp.value && idx < 5) digits[idx + 1].focus();
+    });
+    inp.addEventListener("keydown", e => {
+      if (e.key === "Backspace" && !inp.value && idx > 0) digits[idx - 1].focus();
+      if (e.key === "Enter") document.getElementById("doAdminLogin").click();
+    });
+    inp.addEventListener("paste", e => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData)
+        .getData("text").replace(/\D/g, "").slice(0, 6);
+      pasted.split("").forEach((ch, i) => { if (digits[i]) digits[i].value = ch; });
+      const next = Math.min(pasted.length, 5);
+      digits[next].focus();
+    });
+  });
+})();
+
+function getAdminTotpValue() {
+  return Array.from({length:6}, (_, i) => {
+    const el = document.getElementById("atd" + i);
+    return el ? el.value : "";
+  }).join("");
+}
+
+function flashAdminTotpError() {
+  const digits = Array.from({length:6}, (_, i) => document.getElementById("atd" + i));
+  digits.forEach(d => {
+    if (d) { d.classList.add("atd-error"); d.value = ""; }
+  });
+  setTimeout(() => {
+    digits.forEach(d => { if (d) d.classList.remove("atd-error"); });
+    if (digits[0]) digits[0].focus();
+  }, 600);
+}
+
 document.getElementById("doAdminLogin").addEventListener("click", async () => {
-  const email = document.getElementById("adminEmailInput").value.trim();
-  const pass  = document.getElementById("adminPassInput").value;
-  const errEl = document.getElementById("adminLoginError");
+  const email  = document.getElementById("adminEmailInput").value.trim();
+  const pass   = document.getElementById("adminPassInput").value;
+  const totp   = getAdminTotpValue();
+  const errEl  = document.getElementById("adminLoginError");
   errEl.classList.add("hidden");
+
+  if (!email || !pass) {
+    errEl.textContent = currentLang === "hr" ? "Upiši email i lozinku." : "Enter email and password.";
+    errEl.classList.remove("hidden");
+    return;
+  }
+  if (totp.length < 6) {
+    errEl.textContent = currentLang === "hr" ? "Upiši 6-znamenkasti verifikacijski kod." : "Enter the 6-digit verification code.";
+    errEl.classList.remove("hidden");
+    flashAdminTotpError();
+    return;
+  }
+
+  // Provjeri TOTP PRIJE Firebase poziva — ne otkrivaj je li lozinka ispravna bez koda
+  const totpOk = await adminVerifyTotp(totp);
+  if (!totpOk) {
+    errEl.textContent = currentLang === "hr" ? "Pogrešan verifikacijski kod." : "Wrong verification code.";
+    errEl.classList.remove("hidden");
+    flashAdminTotpError();
+    return;
+  }
+
   try {
     await signInWithEmailAndPassword(window._fbAuth, email, pass);
     hideModal();
     window.location.href = "nadzor-ks2025.html";
   } catch(e) {
-    errEl.textContent = "Pogrešan email ili lozinka.";
+    errEl.textContent = currentLang === "hr" ? "Pogrešan email ili lozinka." : "Wrong email or password.";
     errEl.classList.remove("hidden");
   }
 });
 
 document.getElementById("adminPassInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") document.getElementById("doAdminLogin").click();
+  if (e.key === "Enter") document.getElementById("atd0").focus();
 });
 document.getElementById("adminEmailInput").addEventListener("keydown", e => {
   if (e.key === "Enter") document.getElementById("adminPassInput").focus();
@@ -599,17 +740,16 @@ document.getElementById("toLogin").addEventListener("click", () => {
 document.getElementById("doLogin").addEventListener("click", async () => {
   const name    = document.getElementById("loginName").value.trim();
   const surname = document.getElementById("loginSurname").value.trim();
-  const year    = document.getElementById("loginYear").value.trim();
   const pass    = document.getElementById("loginPass").value;
   const errEl   = document.getElementById("loginError");
 
-  if (!name || !surname || !year || !pass) {
+  if (!name || !surname || !pass) {
     errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : currentLang === "de" ? "Fülle alle Felder aus." : "Fill all fields.";
     errEl.classList.remove("hidden");
     return;
   }
 
-  const result = await loginUser(name, surname, year, pass);
+  const result = await loginUser(name, surname, null, pass);
   if (result.ok) {
     errEl.classList.add("hidden");
     updateLoginUI();
@@ -839,12 +979,29 @@ async function voteQuestion(docId, alreadyVoted) {
   if (!currentUser) { showModal(); return; }
   if (!firebaseReady) return;
   if (alreadyVoted) return;
+
+  // Rate limit — max 10 glasova u 24h po browseru
+  const VOTE_RL_KEY = "_voteRL";
+  function getVoteRL() { try { return JSON.parse(localStorage.getItem(VOTE_RL_KEY) || "{}"); } catch { return {}; } }
+  const vrl = getVoteRL();
+  const now  = Date.now();
+  if (vrl.reset && now < vrl.reset && (vrl.count || 0) >= 10) {
+    const minLeft = Math.ceil((vrl.reset - now) / 60000);
+    showToast(currentLang === "hr"
+      ? `Dostignut dnevni limit glasanja. Pokušaj za ${minLeft} min.`
+      : `Daily vote limit reached. Try in ${minLeft} min.`);
+    return;
+  }
+  if (!vrl.reset || now >= vrl.reset) { vrl.count = 0; vrl.reset = now + 24*60*60*1000; }
+
   try {
     const ref = doc(db, "questions", docId);
     await updateDoc(ref, {
       votes: increment(1),
       voters: [...((await getDoc(ref)).data().voters || []), currentUser.id]
     });
+    vrl.count = (vrl.count || 0) + 1;
+    localStorage.setItem(VOTE_RL_KEY, JSON.stringify(vrl));
     // Refresh whichever list is visible
     const searchVal = document.getElementById("qwSearch").value.trim();
     if (searchVal) {
@@ -892,6 +1049,15 @@ async function searchQuestions(term) {
 }
 
 // Submit new question
+const QW_RATE_LIMIT = 3;        // max pitanja po satu
+const QW_RATE_WINDOW = 60 * 60 * 1000; // 1 sat u ms
+
+function getQwRateData() {
+  try { return JSON.parse(localStorage.getItem("qwRate") || '{"count":0,"since":0}'); }
+  catch { return { count: 0, since: 0 }; }
+}
+function setQwRateData(d) { localStorage.setItem("qwRate", JSON.stringify(d)); }
+
 document.getElementById("qwSubmit").addEventListener("click", async () => {
   if (!currentUser) { showModal(); return; }
   const input = document.getElementById("qwInput");
@@ -901,7 +1067,28 @@ document.getElementById("qwSubmit").addEventListener("click", async () => {
     showToast(currentLang === "hr" ? "Pitanje je prekratko." : "Question too short.");
     return;
   }
+  if (text.length > 200) {
+    showToast(currentLang === "hr" ? "Pitanje ne smije biti dulje od 200 znakova." : "Question must be under 200 characters.");
+    return;
+  }
   if (!firebaseReady) { showToast("Firebase nije spojen."); return; }
+
+  // ── Rate limit: max 3 pitanja / sat ──
+  const now = Date.now();
+  const rd  = getQwRateData();
+  if (now - rd.since > QW_RATE_WINDOW) {
+    rd.count = 0; rd.since = now;
+  }
+  if (rd.count >= QW_RATE_LIMIT) {
+    const minLeft = Math.ceil((QW_RATE_WINDOW - (now - rd.since)) / 60000);
+    const msgs = {
+      hr: `Dostignut limit. Pokušaj ponovo za ${minLeft} min.`,
+      en: `Rate limit reached. Try again in ${minLeft} min.`,
+      de: `Limit erreicht. Versuche es in ${minLeft} Min. erneut.`
+    };
+    showToast(msgs[currentLang] || msgs.hr);
+    return;
+  }
 
   const btn = document.getElementById("qwSubmit");
   btn.disabled = true;
@@ -913,7 +1100,12 @@ document.getElementById("qwSubmit").addEventListener("click", async () => {
       voters: [],
       timestamp: serverTimestamp()
     });
+    rd.count++;
+    setQwRateData(rd);
     input.value = "";
+    // Reset char counter
+    const counterEl = document.getElementById("qwCharCounter");
+    if (counterEl) counterEl.textContent = "0 / 200";
     showToast(currentLang === "hr" ? "Pitanje je postavljeno!" : currentLang === "de" ? "Frage gestellt!" : "Question posted!");
     await loadTopQuestions();
   } catch(e) {

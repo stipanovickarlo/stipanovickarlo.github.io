@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Politika privatnosti — Neutralizam</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0B0D12;--surface:#131620;--gold:#C9A84C;--gold-dim:#8A7035;--text:#E5E3DE;--text-sub:#7A7870;--border:#232737}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+    a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
+    header{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .logo{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.2rem;text-decoration:none}
+    .back-link{color:var(--text-sub);font-size:0.85rem;text-decoration:none;transition:color .2s}.back-link:hover{color:var(--gold)}
+    main{max-width:780px;margin:0 auto;padding:3rem 1.5rem 5rem}
+    h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;color:var(--text);margin-bottom:0.5rem;line-height:1.2}
+    .subtitle{color:var(--text-sub);font-size:0.85rem;margin-bottom:3rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+    h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;color:var(--gold);margin:2.5rem 0 1rem}
+    h3{font-size:0.95rem;font-weight:600;color:var(--text);margin:1.5rem 0 0.5rem}
+    p{color:var(--text-sub);margin-bottom:1rem}
+    ul,ol{color:var(--text-sub);padding-left:1.5rem;margin-bottom:1rem}
+    li{margin-bottom:0.4rem}strong{color:var(--text)}
+    .highlight-box{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:1.25rem 1.5rem;margin:1.5rem 0}
+    .highlight-box p{margin:0;color:var(--text);font-size:0.9rem}
+    .contact-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin:1.5rem 0}
+    .contact-box h3{margin-top:0}
+    .warn-box{background:rgba(224,112,112,0.07);border:1px solid rgba(224,112,112,0.25);border-radius:6px;padding:1rem 1.25rem;margin:1rem 0}
+    .warn-box p{margin:0;color:#e07070;font-size:0.85rem}
+    .changelog{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1.25rem 1.5rem;margin:1.5rem 0}
+    .changelog h3{margin-top:0;color:var(--gold);font-size:0.85rem;letter-spacing:0.05em}
+    .changelog ul{margin:0}
+    .changelog li{font-size:0.82rem;color:var(--text-sub)}
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--text-sub);font-size:0.8rem}
+    footer a{color:var(--text-sub)}
+    @media(max-width:600px){main{padding:2rem 1rem 4rem}header{padding:1rem}}
+  </style>
+</head>
+<body>
+<header>
+  <a href="index.html" class="logo">Neutralizam</a>
+  <a href="index.html" class="back-link">← Povratak na stranicu</a>
+</header>
+
+<main>
+  <h1>Politika privatnosti</h1>
+  <p class="subtitle">Verzija 1.2 · Zadnje ažuriranje: 30. travnja 2026. · Primjenjuje se na: neutralizam.eu</p>
+
+  <div class="highlight-box">
+    <p><strong>Kratki sažetak:</strong> Prikupljamo minimalne anonimne podatke nužne za rad stranice. Ne prodajemo podatke, ne koristimo reklame, ne pratimo identitet korisnika. Svaki korisnik ima pravo na brisanje svog računa u bilo trenutku.</p>
+  </div>
+
+  <h2>1. Tko je voditelj obrade</h2>
+  <p>Voditelj obrade osobnih podataka je:</p>
+  <div class="contact-box">
+    <h3>Karlo Stipanović</h3>
+    <p>
+      Projekt: Neutralizam — Iskren Svijet<br>
+      Kontakt: <a href="https://mail.google.com/mail/?view=cm&to=hvaljenahrvatska@gmail.com" target="_blank" rel="noopener">hvaljenahrvatska@gmail.com</a><br>
+      Web: <a href="https://neutralizam.eu/" target="_blank" rel="noopener">neutralizam.eu</a>
+    </p>
+  </div>
+
+  <h2>2. Koje podatke prikupljamo i zašto</h2>
+
+  <h3>2.1 Anonimni posjetitelji (bez prijave)</h3>
+  <p>Za sve posjetitelje stranice bilježi se:</p>
+  <ul>
+    <li><strong>Broj posjeta</strong> — anonimni zbirni brojač u Firebase Firestore bazi. Ne sprema se IP adresa ni identitet posjetitelja.</li>
+    <li><strong>Tehničke informacije</strong> — Firebase automatski obrađuje standardne mrežne podatke (IP adresa, User-Agent) isključivo u svrhu sigurnosti i zaštite od zlouporabe, u skladu s <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Googleovom politikom privatnosti</a>. Ti podaci nisu dostupni nama.</li>
+    <li><strong>Google Fonts</strong> — učitavanjem fontova s Googleovih CDN servera vaša IP adresa može biti zabilježena od strane Googlea. Ovo je prijenos osobnih podataka trećoj strani koji nije pod našom kontrolom. Alternativa: koristite bloker skripti ili zatražite samohostanu verziju fontova putem kontakta.</li>
+  </ul>
+  <p><strong>Pravna osnova:</strong> Legitimni interes (čl. 6 st. 1 toč. f GDPR-a).</p>
+
+  <h3>2.2 Registrirani korisnici</h3>
+  <p>Pri dobrovoljnoj registraciji prikupljamo:</p>
+  <ul>
+    <li><strong>Ime i prezime</strong> — identifikator za prijavu, prikazuje se u profilu</li>
+    <li><strong>Godina rođenja</strong> — demografska statistika zajednice, nije javno vidljiva</li>
+    <li><strong>Hash lozinke</strong> — jednosmjerni hash, ne omogućava rekonstrukciju lozinke</li>
+    <li><strong>Datum registracije</strong> — automatski timestamp</li>
+    <li><strong>Podaci anketa</strong> — odgovori na pitanja (skala 1–5) i opcionalni komentar</li>
+    <li><strong>Postavljena pitanja</strong> — tekst pitanja, glasovi, odgovori admina</li>
+  </ul>
+  <p><strong>Ne prikupljamo:</strong> e-mail adresu, OIB, broj telefona, lokaciju, IP adresu korisnika, reklamne kolačiće.</p>
+  <p><strong>Pravna osnova:</strong> Privola ispitanika (čl. 6 st. 1 toč. a GDPR-a) — dana pri registraciji.</p>
+
+  <h3>2.3 Posebne kategorije podataka — Ankete (GDPR čl. 9)</h3>
+  <div class="warn-box">
+    <p><strong>Važno:</strong> Ankete sadržavaju pitanja o zadovoljstvu političkim sustavom i interesu za politiku. Prema čl. 9 GDPR-a, podaci o političkim stavovima smatraju se <strong>posebnom kategorijom osobnih podataka</strong> za čiju obradu je potrebna eksplicitna privola.</p>
+  </div>
+  <p>Sudjelovanje u anketi je u potpunosti <strong>dobrovoljno</strong>. Odgovori su vezani za anonimni interni ID korisnika, a obrađuju se isključivo u svrhu statističke analize stavova zajednice prema Neutralizmu. Podaci se nikada neće koristiti za profiliranje, ciljano oglašavanje ni prosljeđivanje trećim stranama.</p>
+  <p><strong>Pravna osnova za posebnu kategoriju:</strong> Eksplicitna privola (čl. 9 st. 2 toč. a GDPR-a) — dana dobrovoljnim sudjelovanjem u anketi uz prethodno prikazanu napomenu.</p>
+
+  <h2>3. Tko obrađuje podatke (Izvršitelji obrade)</h2>
+  <ul>
+    <li><strong>Google Firebase (Firestore, Authentication)</strong> — pohrana podataka na Google serverima. <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Politika privatnosti Googlea</a>.</li>
+    <li><strong>Hosting (neutralizam.eu)</strong> — statička stranica servirana putem vlastite domene. Primjenjuje se politika hostinga davatelja usluge.</li>
+    <li><strong>Google Fonts</strong> — fontovi učitani s Googleovih CDN servera. IP adresa korisnika može biti zabilježena.</li>
+  </ul>
+
+  <h2>4. Koliko dugo čuvamo podatke</h2>
+  <ul>
+    <li><strong>Korisnički račun</strong> — do brisanja od strane korisnika ili administratora</li>
+    <li><strong>Podaci anketa</strong> — trajno (statistička analiza), ali vezani za anonimni ID koji se briše s računom</li>
+    <li><strong>Pitanja korisnika</strong> — trajno, osim ručnog brisanja</li>
+    <li><strong>Ažuriranja / obavijesti</strong> — automatski se brišu nakon <strong>30 dana</strong></li>
+    <li><strong>Statistika posjeta</strong> — trajni zbirni brojač (samo ukupan broj)</li>
+  </ul>
+
+  <h2>5. Vaša prava (GDPR)</h2>
+  <ul>
+    <li><strong>Pristup</strong> — uvid u podatke koje čuvamo</li>
+    <li><strong>Ispravak</strong> — ispravak netočnih podataka</li>
+    <li><strong>Brisanje</strong> — brisanje računa izravno na stranici (Prijava → Izbriši račun) ili e-mailom</li>
+    <li><strong>Ograničenje obrade</strong> — privremena obustava obrade</li>
+    <li><strong>Prenosivost</strong> — podaci u strojno čitljivom formatu. Zahtjev uputite na: <a href="https://mail.google.com/mail/?view=cm&to=hvaljenahrvatska@gmail.com" target="_blank" rel="noopener">hvaljenahrvatska@gmail.com</a>. Administrator može exportati vaše podatke iz admin panela i dostaviti ih u roku od 30 dana.</li>
+    <li><strong>Prigovor</strong> — protivljenje obradi temeljenoj na legitimnom interesu</li>
+    <li><strong>Povlačenje privole</strong> — brisanjem računa u bilo trenutku</li>
+    <li><strong>Povlačenje privole za anketu</strong> — nije moguće retroaktivno (podaci su anonimni), ali možete zatražiti brisanje računa i svih vezanih podataka</li>
+  </ul>
+
+  <h2>6. Pravo pritužbe nadzornom tijelu</h2>
+  <div class="contact-box">
+    <h3>Agencija za zaštitu osobnih podataka (AZOP)</h3>
+    <p>
+      Martićeva ulica 14, 10 000 Zagreb<br>
+      Tel: +385 1 4609 000<br>
+      Web: <a href="https://azop.hr" target="_blank" rel="noopener">azop.hr</a><br>
+      E-mail: <a href="/cdn-cgi/l/email-protection#a6c7dcc9d6e6c7dcc9d688ced4">hvaljenahrvatska@gmail.com</a>
+    </p>
+  </div>
+
+  <h2>7. Sigurnost podataka</h2>
+  <ul>
+    <li>Lozinke pohranjene kao jednosmjerni hash (ne mogu se rekonstruirati)</li>
+    <li>SSL/TLS enkripcija (HTTPS) na svim vezama</li>
+    <li>Firebase Security Rules — ograničen pristup podacima</li>
+    <li>Admin pristup zaštićen Firebase Authentication sustavom</li>
+  </ul>
+
+  <h2>8. Kolačići (Cookies)</h2>
+  <p>Ova stranica <strong>ne koristi reklamne kolačiće</strong> niti kolačiće za praćenje. Lokalna pohrana:</p>
+  <ul>
+    <li><strong>localStorage</strong> — postavke (tema, jezik, font, zoom) i status prijave. Ostaju na vašem uređaju.</li>
+    <li><strong>sessionStorage</strong> — jednokratna bilješka posjeta. Briše se zatvaranjem preglednika.</li>
+  </ul>
+  <p>Firebase može koristiti vlastite tehničke kolačiće za autentifikaciju. Više: <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/support/privacy</a>.</p>
+
+  <h2>9. Djeca i maloljetnici</h2>
+  <p>Stranica nije namijenjena djeci mlađoj od 16 godina. Sukladno čl. 8 GDPR-a, za obradu podataka mlađih od 16 godina potrebna je privola roditelja ili skrbnika. Ako saznamo da je korisnik mlađi od 16 godina bez takve privole, podatke ćemo odmah obrisati.</p>
+
+  <h2>10. Kontakt za privatnost</h2>
+  <div class="contact-box">
+    <p>
+      Za sva pitanja o obradi osobnih podataka:<br>
+      <a href="https://mail.google.com/mail/?view=cm&to=hvaljenahrvatska@gmail.com" target="_blank" rel="noopener"><strong>hvaljenahrvatska@gmail.com</strong></a><br>
+      Odgovaramo u roku od <strong>30 dana</strong> od primitka zahtjeva.
+    </p>
+  </div>
+
+  <h2>11. Izmjene politike privatnosti</h2>
+  <p>O bitnim izmjenama obavijestit ćemo korisnike putem Ažuriranja u inboxu. Datum zadnjeg ažuriranja i verzija navedeni su na vrhu dokumenta.</p>
+</main>
+
+<footer>
+  <p>© 2026 Karlo Stipanović · Neutralizam ·
+    <a href="index.html">Povratak na stranicu</a>
+  </p>
+</footer>
+</body>
+</html>

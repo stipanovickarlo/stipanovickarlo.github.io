@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
- 
+Crawl-delay: 2
+
 Disallow: /nadzor-ks2025.html
- 
-Sitemap: https://stipanovickarlo.github.io/neutralizam/sitemap.xml
- 
+
+Sitemap: https://neutralizam.eu/sitemap.xml

@@ -1,14 +1,17 @@
 {
+  "id": "https://neutralizam.eu/",
   "name": "Neutralizam — Iskren Svijet",
   "short_name": "Neutralizam",
   "description": "Nova ideologija utemeljena na iskrenosti. Pročitaj besplatnu knjigu i pridruži se zajednici.",
-  "start_url": "/neutralizam/",
-  "scope": "/neutralizam/",
+  "start_url": "https://neutralizam.eu/",
+  "scope": "https://neutralizam.eu/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#0B0D12",
   "theme_color": "#0B0D12",
   "orientation": "portrait-primary",
   "lang": "hr",
+  "dir": "ltr",
   "categories": ["politics", "education", "books"],
   "icons": [
     {
@@ -29,14 +32,14 @@
       "name": "Anketa",
       "short_name": "Anketa",
       "description": "Ispuni anketu",
-      "url": "/neutralizam/#pre-survey",
+      "url": "https://neutralizam.eu/#pre-survey",
       "icons": [{ "src": "assets/logo.png", "sizes": "96x96" }]
     },
     {
       "name": "Knjiga",
       "short_name": "Knjiga",
       "description": "Preuzmi knjigu",
-      "url": "/neutralizam/#download",
+      "url": "https://neutralizam.eu/#download",
       "icons": [{ "src": "assets/logo.png", "sizes": "96x96" }]
     }
   ],

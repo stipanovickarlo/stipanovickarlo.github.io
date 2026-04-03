@@ -213,6 +213,60 @@
     /* ── COMMENT ── */
     .comment { font-style: italic; color: var(--text-sub); font-size: 0.82rem; margin-top: 0.25rem; }
 
+
+    /* ── DOWNLOAD TAB BUTTON ── */
+    .download-tab { color: var(--gold) !important; }
+    .download-tab.active { border-bottom-color: var(--gold); }
+
+    /* ── DOWNLOAD PANEL ── */
+    .dl-panel {
+      max-width: 620px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 2.25rem 2.5rem; margin-top: 0.5rem;
+    }
+    .dl-panel-head {
+      display: flex; align-items: flex-start; gap: 1.25rem; margin-bottom: 2rem;
+    }
+    .dl-icon-wrap {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 1px solid var(--gold-dim); display: flex;
+      align-items: center; justify-content: center;
+      color: var(--gold); flex-shrink: 0;
+    }
+    .dl-panel-title {
+      font-family: var(--font-disp); color: var(--gold);
+      font-size: 1.25rem; margin-bottom: 0.3rem;
+    }
+    .dl-panel-sub { color: var(--text-sub); font-size: 0.85rem; line-height: 1.5; }
+
+    .dl-sheets {
+      display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 2rem;
+    }
+    .dl-sheet-row {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 0.9rem 1rem; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border); border-radius: 5px;
+    }
+    .dl-sheet-badge {
+      width: 28px; height: 28px; border-radius: 4px;
+      background: rgba(201,168,76,0.15); color: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+    .dl-sheet-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .dl-sheet-info strong { color: var(--text); font-size: 0.9rem; }
+    .dl-sheet-info span { color: var(--text-sub); font-size: 0.8rem; line-height: 1.45; }
+
+    .dl-btn {
+      width: 100%; padding: 0.9rem 2rem; font-size: 0.92rem;
+      font-weight: 500; letter-spacing: 0.02em;
+    }
+    .dl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .dl-note {
+      color: var(--text-sub); font-size: 0.76rem; text-align: center;
+      margin-top: 0.85rem; font-style: italic;
+    }
+
     @media (max-width: 600px) {
       .stat-row { grid-template-columns: 1fr; }
       header { padding: 0 1.25rem; }
@@ -351,19 +405,83 @@
       font-family: var(--font-body); font-size: 0.78rem; transition: all 0.2s;
     }
     .upd-delete-btn:hover { border-color: var(--red); color: var(--red); }
+    /* ── TOTP STEP ── */
+    .totp-step { display: none; }
+    .totp-title { font-family: var(--font-disp); color: var(--gold); font-size: 1.3rem; margin-bottom: 0.4rem; }
+    .totp-sub { color: var(--text-sub); font-size: 0.83rem; margin-bottom: 1.5rem; line-height: 1.55; }
+    .totp-input-wrap {
+      display: flex; gap: 0; margin-bottom: 1rem; justify-content: center;
+    }
+    .totp-digit {
+      width: 48px; height: 60px; text-align: center; font-size: 1.6rem;
+      font-family: var(--font-disp); font-weight: 700; color: var(--gold);
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-right: none; caret-color: var(--gold); outline: none;
+      transition: border-color 0.2s; letter-spacing: 0;
+      -moz-appearance: textfield;
+    }
+    .totp-digit::-webkit-inner-spin-button,
+    .totp-digit::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .totp-digit:first-child { border-radius: 4px 0 0 4px; }
+    .totp-digit:last-child  { border-right: 1px solid var(--border); border-radius: 0 4px 4px 0; }
+    .totp-digit:focus { border-color: var(--gold-dim); }
+    .totp-digit.totp-error { border-color: var(--red) !important; }
+    .totp-back {
+      background: none; border: none; color: var(--text-sub); cursor: pointer;
+      font-size: 0.8rem; font-family: var(--font-body); padding: 0.5rem 0;
+      display: block; margin-top: 0.75rem; transition: color 0.2s;
+    }
+    .totp-back:hover { color: var(--text); }
+    .totp-app-hint {
+      background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 4px; padding: 0.75rem 1rem; margin-bottom: 1.25rem;
+      font-size: 0.8rem; color: var(--text-sub); line-height: 1.5;
+    }
+    .totp-app-hint strong { color: var(--gold); }
+    .rate-limit-msg { color: var(--red); font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+
   </style>
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <!-- ── LOGIN ── -->
 <div id="loginScreen">
   <div class="login-box">
-    <h1>Admin Panel</h1>
-    <p>Neutralizam — Samo za administratore</p>
-    <input class="inp" type="email" id="adminEmail" placeholder="Email" />
-    <input class="inp" type="password" id="adminPass" placeholder="Lozinka" />
-    <button class="btn" id="adminLogin">Prijavi se</button>
-    <p class="err hidden" id="adminErr">Pogrešan email ili lozinka.</p>
+
+    <!-- Korak 1: Email + lozinka -->
+    <div id="stepCredentials">
+      <h1>Admin Panel</h1>
+      <p>Neutralizam — Samo za administratore</p>
+      <input class="inp" type="email" id="adminEmail" placeholder="Email" autocomplete="username"/>
+      <input class="inp" type="password" id="adminPass" placeholder="Lozinka" autocomplete="current-password"/>
+      <button class="btn" id="adminLogin">Nastavi →</button>
+      <p class="err hidden" id="adminErr"></p>
+    </div>
+
+    <!-- Korak 2: TOTP kod -->
+    <div id="stepTotp" class="totp-step">
+      <h2 class="totp-title">Verifikacijski kod</h2>
+      <p class="totp-sub">Unesi 6-znamenkasti kod iz generatora kodova.</p>
+      <div class="totp-app-hint">
+        Otvori <strong>totp.html</strong> generator da vidiš trenutni kod.
+      </div>
+      <div class="totp-input-wrap" id="totpInputWrap">
+        <input class="totp-digit" type="number" maxlength="1" min="0" max="9" id="td0" inputmode="numeric"/>
+        <input class="totp-digit" type="number" maxlength="1" min="0" max="9" id="td1" inputmode="numeric"/>
+        <input class="totp-digit" type="number" maxlength="1" min="0" max="9" id="td2" inputmode="numeric"/>
+        <input class="totp-digit" type="number" maxlength="1" min="0" max="9" id="td3" inputmode="numeric"/>
+        <input class="totp-digit" type="number" maxlength="1" min="0" max="9" id="td4" inputmode="numeric"/>
+        <input class="totp-digit" type="number" maxlength="1" min="0" max="9" id="td5" inputmode="numeric"/>
+      </div>
+      <button class="btn" id="totpVerify">Verificiraj</button>
+      <p class="err hidden" id="totpErr">Pogrešan kod. Pokušaj ponovo.</p>
+      <p class="rate-limit-msg" id="rateLimitMsg"></p>
+      <button class="totp-back" id="totpBack">← Natrag na prijavu</button>
+    </div>
+
   </div>
 </div>
 
@@ -387,7 +505,10 @@
       <button class="tab active" data-tab="users">Korisnici</button>
       <button class="tab" data-tab="surveys">Ankete</button>
       <button class="tab" data-tab="questions">Pitanja</button>
-      <button class="tab" data-tab="updates">Updateovi</button>
+      <button class="tab" data-tab="updates">Ažuriranja</button>
+      <button class="tab download-tab" data-tab="download">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-1px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Preuzmi
+      </button>
     </div>
 
     <!-- Users tab -->
@@ -438,17 +559,17 @@
 
     <!-- Updates tab -->
     <div class="tab-content" id="tab-updates">
-      <!-- New update form -->
+      <!-- Novo ažuriranje -->
       <div class="upd-compose">
-        <h3 class="upd-compose-title">Novi update</h3>
-        <input type="text" class="inp upd-title-inp" id="updTitle" placeholder="Naslov updatea..." maxlength="120"/>
+        <h3 class="upd-compose-title">Novo ažuriranje</h3>
+        <input type="text" class="inp upd-title-inp" id="updTitle" placeholder="Naslov ažuriranja..." maxlength="120"/>
         <textarea class="inp upd-body-inp" id="updBody" placeholder="Tekst poruke..." maxlength="1000"></textarea>
         <div class="upd-compose-footer">
           <span class="upd-char-count" id="updCharCount">0 / 1000</span>
-          <button class="btn upd-publish-btn" id="updPublish">Objavi update</button>
+          <button class="btn upd-publish-btn" id="updPublish">Objavi ažuriranje</button>
         </div>
       </div>
-      <!-- Existing updates list -->
+      <!-- Popis ažuriranja -->
       <div class="toolbar" style="margin-top:1.5rem">
         <span class="count" id="updateCount"></span>
         <button class="btn-refresh" id="refreshUpdates">↻ Osvježi</button>
@@ -457,6 +578,58 @@
         <div class="loading"><div class="spinner"></div><br>Učitavanje...</div>
       </div>
     </div>
+    <!-- Download tab -->
+    <div class="tab-content" id="tab-download">
+      <div class="dl-panel" style="margin:0 auto;">
+        <div class="dl-panel-head">
+          <div class="dl-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div>
+            <h3 class="dl-panel-title">Preuzmi sve podatke</h3>
+            <p class="dl-panel-sub">Kompletni izvoz iz Firebase baze — jedan .xlsx file, četiri lista</p>
+          </div>
+        </div>
+
+        <div class="dl-sheets">
+          <div class="dl-sheet-row">
+            <span class="dl-sheet-badge">1</span>
+            <div class="dl-sheet-info">
+              <strong>Korisnici</strong>
+              <span>Jedan red po korisniku — profil, anketa prije/nakon, broj pitanja i glasova</span>
+            </div>
+          </div>
+          <div class="dl-sheet-row">
+            <span class="dl-sheet-badge">2</span>
+            <div class="dl-sheet-info">
+              <strong>Pitanja</strong>
+              <span>Sva pitanja — tekst, glasovi, admin odgovor, datum, ID korisnika</span>
+            </div>
+          </div>
+          <div class="dl-sheet-row">
+            <span class="dl-sheet-badge">3</span>
+            <div class="dl-sheet-info">
+              <strong>Ažuriranja</strong>
+              <span>Sve objavljene obavijesti — naslov, tekst, datum, datum isteka</span>
+            </div>
+          </div>
+          <div class="dl-sheet-row">
+            <span class="dl-sheet-badge">4</span>
+            <div class="dl-sheet-info">
+              <strong>Statistika</strong>
+              <span>Svi zbirni podaci s Firebasea — posjeta, preuzimanja, ankete i ostalo</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn dl-btn" id="exportAllXlsx">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Preuzmi Excel izvještaj
+        </button>
+        <p class="dl-note">Generira se na klik — uvijek aktualni podaci iz Firebasea</p>
+      </div>
+    </div>
+
   </main>
 
 <!-- ── DETAIL MODAL ── -->
@@ -495,26 +668,204 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-// ── LOGIN ────────────────────────────────────────────────────
-const adminPassInput = document.getElementById("adminPass");
-const adminEmailInput = document.getElementById("adminEmail");
-const adminErr       = document.getElementById("adminErr");
+// ── TOTP IMPLEMENTACIJA (RFC 6238) ───────────────────────────
+// Isti tajni ključ mora biti u totp.html generatoru
+const TOTP_SECRET = "KVKFKRCPNZQXI3DJNZSXG43JMFSG65TF";
 
+function base32Decode(s) {
+  const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  s = s.replace(/=+$/, "").toUpperCase();
+  let bits = 0, val = 0, idx = 0;
+  const out = new Uint8Array(Math.floor(s.length * 5 / 8));
+  for (const ch of s) {
+    const i = alpha.indexOf(ch);
+    if (i < 0) continue;
+    val = (val << 5) | i; bits += 5;
+    if (bits >= 8) { out[idx++] = (val >>> (bits - 8)) & 0xff; bits -= 8; }
+  }
+  return out;
+}
+
+async function computeTotp(secret, timeStep) {
+  const key = base32Decode(secret);
+  const msg = new ArrayBuffer(8);
+  new DataView(msg).setUint32(4, timeStep, false);
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]
+  );
+  const sig  = new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, msg));
+  const off  = sig[19] & 0x0f;
+  const code = (((sig[off] & 0x7f) << 24) | ((sig[off+1] & 0xff) << 16) |
+                ((sig[off+2] & 0xff) << 8) | (sig[off+3] & 0xff)) % 1000000;
+  return String(code).padStart(6, "0");
+}
+
+async function verifyTotp(input) {
+  const step = Math.floor(Date.now() / 1000 / 30);
+  // Prihvati ±1 vremenski prozor (±30 sekundi)
+  for (const offset of [0, -1, 1]) {
+    const expected = await computeTotp(TOTP_SECRET, step + offset);
+    if (input === expected) return true;
+  }
+  return false;
+}
+
+// ── RATE LIMITING (localStorage) ─────────────────────────────
+const RL_KEY = "_adminRL";
+function getRl() { try { return JSON.parse(localStorage.getItem(RL_KEY) || "{}"); } catch { return {}; } }
+function saveRl(o) { try { localStorage.setItem(RL_KEY, JSON.stringify(o)); } catch {} }
+
+function checkRateLimit() {
+  const rl = getRl();
+  const now = Date.now();
+  if (rl.lockUntil && now < rl.lockUntil) {
+    const secs = Math.ceil((rl.lockUntil - now) / 1000);
+    return { locked: true, secs };
+  }
+  return { locked: false };
+}
+
+function recordFailedAttempt() {
+  const rl  = getRl();
+  const now = Date.now();
+  rl.fails  = (rl.fails || 0) + 1;
+  rl.last   = now;
+  // Lockout: 3 neuspjeha → 60s, 5 → 300s, 7+ → 1800s
+  if (rl.fails >= 7)      rl.lockUntil = now + 1800000;
+  else if (rl.fails >= 5) rl.lockUntil = now + 300000;
+  else if (rl.fails >= 3) rl.lockUntil = now + 60000;
+  saveRl(rl);
+}
+
+function clearFailedAttempts() { localStorage.removeItem(RL_KEY); }
+
+// ── LOGIN FLOW ────────────────────────────────────────────────
+const adminPassInput  = document.getElementById("adminPass");
+const adminEmailInput = document.getElementById("adminEmail");
+const adminErr        = document.getElementById("adminErr");
+const totpErr         = document.getElementById("totpErr");
+const rateLimitMsg    = document.getElementById("rateLimitMsg");
+
+// TOTP digit inputs — auto-advance i paste support
+const totpDigits = Array.from({length:6}, (_,i) => document.getElementById("td"+i));
+totpDigits.forEach((inp, idx) => {
+  inp.addEventListener("input", () => {
+    // Uzmi samo zadnji uneseni znak
+    if (inp.value.length > 1) inp.value = inp.value.slice(-1);
+    if (inp.value && idx < 5) totpDigits[idx+1].focus();
+    // Ako su svi popunjeni — auto-submit
+    if (totpDigits.every(d => d.value.length === 1)) {
+      document.getElementById("totpVerify").click();
+    }
+  });
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Backspace" && !inp.value && idx > 0) totpDigits[idx-1].focus();
+  });
+  inp.addEventListener("paste", e => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "").slice(0,6);
+    pasted.split("").forEach((ch, i) => { if (totpDigits[i]) totpDigits[i].value = ch; });
+    const next = Math.min(pasted.length, 5);
+    totpDigits[next].focus();
+  });
+});
+
+function getTotpInput() {
+  return totpDigits.map(d => d.value).join("");
+}
+
+function showTotpError(msg) {
+  totpErr.textContent = msg;
+  totpErr.classList.remove("hidden");
+  totpDigits.forEach(d => d.classList.add("totp-error"));
+  setTimeout(() => {
+    totpDigits.forEach(d => { d.classList.remove("totp-error"); d.value = ""; });
+    totpDigits[0].focus();
+    totpErr.classList.add("hidden");
+  }, 1800);
+}
+
+// Korak 1: email + lozinka
 document.getElementById("adminLogin").addEventListener("click", tryLogin);
 adminPassInput.addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
 
 async function tryLogin() {
-  const email = document.getElementById("adminEmail").value.trim();
+  const rl = checkRateLimit();
+  if (rl.locked) {
+    adminErr.textContent = `Previše pokušaja. Pričekaj ${rl.secs}s.`;
+    adminErr.classList.remove("hidden");
+    return;
+  }
+
+  const email = adminEmailInput.value.trim();
   const pass  = adminPassInput.value;
   adminErr.classList.add("hidden");
+
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-    // onAuthStateChanged will handle UI
+    // Uspješna Firebase auth → pređi na TOTP korak (sign out odmah, čekamo TOTP)
+    await signOut(auth);
+    document.getElementById("stepCredentials").style.display = "none";
+    document.getElementById("stepTotp").style.display = "block";
+    setTimeout(() => totpDigits[0].focus(), 100);
   } catch(e) {
+    recordFailedAttempt();
+    const rl2 = checkRateLimit();
+    if (rl2.locked) {
+      adminErr.textContent = `Previše pokušaja. Zaključano ${rl2.secs}s.`;
+    } else {
+      adminErr.textContent = "Pogrešan email ili lozinka.";
+    }
     adminErr.classList.remove("hidden");
-    adminErr.textContent = "Pogrešan email ili lozinka.";
   }
 }
+
+// Korak 2: TOTP verifikacija
+document.getElementById("totpVerify").addEventListener("click", async () => {
+  const rl = checkRateLimit();
+  if (rl.locked) {
+    rateLimitMsg.textContent = `Zaključano. Pričekaj ${rl.secs}s.`;
+    rateLimitMsg.style.display = "block";
+    return;
+  }
+
+  const input = getTotpInput();
+  if (input.length < 6) {
+    showTotpError("Unesi svih 6 znamenki.");
+    return;
+  }
+
+  const ok = await verifyTotp(input);
+  if (ok) {
+    // TOTP ispravan — sada se stvarno prijavi
+    clearFailedAttempts();
+    const email = adminEmailInput.value.trim();
+    const pass  = adminPassInput.value;
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged preuzima
+    } catch(e) {
+      showTotpError("Greška pri prijavi. Pokušaj ponovo.");
+    }
+  } else {
+    recordFailedAttempt();
+    const rl2 = checkRateLimit();
+    if (rl2.locked) {
+      rateLimitMsg.textContent = `Previše pokušaja. Zaključano ${rl2.secs}s.`;
+      rateLimitMsg.style.display = "block";
+    } else {
+      showTotpError("Pogrešan kod. Provjeri generator.");
+    }
+  }
+});
+
+document.getElementById("totpBack")?.addEventListener("click", () => {
+  document.getElementById("stepCredentials").style.display = "";
+  document.getElementById("stepTotp").style.display = "none";
+  totpDigits.forEach(d => d.value = "");
+  totpErr.classList.add("hidden");
+  rateLimitMsg.style.display = "none";
+});
 
 document.getElementById("adminLogout").addEventListener("click", async () => {
   await signOut(auth);
@@ -540,8 +891,9 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
-    // Lazy-load updates tab on first open
+    // Lazy-load ažuriranja na prvom otvaranju
     if (tab.dataset.tab === "updates") loadUpdates();
+    // Download tab nema posebnog loada — gumb generira na klik
   });
 });
 
@@ -1006,10 +1358,10 @@ async function loadUpdates() {
       await batch.commit().catch(() => {});
     }
 
-    document.getElementById("updateCount").textContent = `${items.length} updateova`;
+    document.getElementById("updateCount").textContent = `${items.length} ažuriranja`;
 
     if (!items.length) {
-      grid.innerHTML = `<p style="color:var(--text-sub);padding:1.5rem">Nema objavljenih updateova.</p>`;
+      grid.innerHTML = `<p style="color:var(--text-sub);padding:1.5rem">Nema objavljenih ažuriranja.</p>`;
       return;
     }
 
@@ -1045,23 +1397,23 @@ async function loadUpdates() {
 }
 
 window.adminDeleteUpdate = async function(updId) {
-  if (!confirm("Izbrisati ovaj update? Korisnici ga više neće vidjeti.")) return;
+  if (!confirm("Izbrisati ovo ažuriranje? Korisnici ga više neće vidjeti.")) return;
   try {
     await deleteDoc(doc(db, "announcements", updId));
-    showAdminToast("Update je izbrisan.");
+    showAdminToast("Ažuriranje je izbrisano.");
     await loadUpdates();
   } catch(e) {
     showAdminToast("Greška: " + e.message);
   }
 };
 
-// Publish new update
+// Objavi ažuriranje
 document.getElementById("updPublish").addEventListener("click", async () => {
   const title = document.getElementById("updTitle").value.trim();
   const body  = document.getElementById("updBody").value.trim();
   const btn   = document.getElementById("updPublish");
 
-  if (!title) { showAdminToast("Upiši naslov updatea."); return; }
+  if (!title) { showAdminToast("Upiši naslov ažuriranja."); return; }
   if (!body)  { showAdminToast("Upiši tekst poruke."); return; }
   if (body.length > 1000) { showAdminToast("Tekst je predugačak (maks. 1000 znakova)."); return; }
 
@@ -1076,13 +1428,13 @@ document.getElementById("updPublish").addEventListener("click", async () => {
     document.getElementById("updTitle").value = "";
     document.getElementById("updBody").value  = "";
     document.getElementById("updCharCount").textContent = "0 / 1000";
-    showAdminToast("Update je objavljen! Vidljiv svim korisnicima.");
+    showAdminToast("Ažuriranje objavljeno! Vidljiv svim korisnicima.");
     await loadUpdates();
   } catch(e) {
     showAdminToast("Greška: " + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Objavi update";
+    btn.textContent = "Objavi ažuriranje";
   }
 });
 
@@ -1094,8 +1446,223 @@ document.getElementById("updBody").addEventListener("input", () => {
   el.classList.toggle("over", len > 1000);
 });
 
-// Refresh
-document.getElementById("refreshUpdates").addEventListener("click", () => loadUpdates());
+
+// ── EXCEL EXPORT — sve u jednom ───────────────────────────────
+
+function fmtD(ts) {
+  return ts?.toDate ? ts.toDate().toLocaleDateString("hr-HR") : "";
+}
+
+document.getElementById("exportAllXlsx")?.addEventListener("click", async () => {
+  const btn      = document.getElementById("exportAllXlsx");
+
+  if (!window.XLSX) {
+    showAdminToast("SheetJS se nije učitao. Osvježi stranicu.");
+    return;
+  }
+
+  btn.disabled  = true;
+
+  try {
+    const wb = XLSX.utils.book_new();
+    const THIRTY = 30 * 24 * 60 * 60 * 1000;
+
+    // ─── LIST 1: KORISNICI (jedan red po korisniku, sve uključeno) ───
+
+    // Dohvati svježe podatke direktno iz Firebasea
+    const [usersSnap, surveysSnap, questionsSnap] = await Promise.all([
+      getDocs(collection(db, "users")),
+      getDocs(collection(db, "surveys")),
+      getDocs(query(collection(db, "questions"), orderBy("votes", "desc")))
+    ]);
+
+    const freshUsers     = [];
+    const freshSurveys   = [];
+    const freshQuestions = [];
+    usersSnap.forEach(d     => freshUsers.push({ id: d.id, ...d.data() }));
+    surveysSnap.forEach(d   => freshSurveys.push({ id: d.id, ...d.data() }));
+    questionsSnap.forEach(d => freshQuestions.push({ id: d.id, ...d.data() }));
+
+    // Izgradi mapu pitanja po userId
+    const qByUser = {};
+    freshQuestions.forEach(q => {
+      if (!qByUser[q.userId]) qByUser[q.userId] = { count: 0, totalVotes: 0 };
+      qByUser[q.userId].count++;
+      qByUser[q.userId].totalVotes += (q.votes || 0);
+    });
+
+    // Header za korisnike
+    const usersHeader = [
+      "ID", "Ime", "Prezime", "Godina rođenja", "Datum registracije",
+      "ANKETA PRIJE — Zadovoljstvo sustavom (1-5)",
+      "ANKETA PRIJE — Vjera u promjenu (1-5)",
+      "ANKETA PRIJE — Interes za politiku (1-5)",
+      "DOJMOVI NAKON — Potaknulo na razmišljanje (1-5)",
+      "DOJMOVI NAKON — Slaganje s idejama (1-5)",
+      "DOJMOVI NAKON — Preporuka (1-5)",
+      "DOJMOVI NAKON — Komentar",
+      "Broj postavljenih pitanja",
+      "Ukupni glasovi na pitanjima"
+    ];
+
+    const usersRows = freshUsers.map(u => {
+      const pre  = freshSurveys.find(s => s.userId === u.id && s.type === "pre");
+      const post = freshSurveys.find(s => s.userId === u.id && s.type === "post");
+      const pd   = pre?.data  || {};
+      const od   = post?.data || {};
+      const qs   = qByUser[u.id] || { count: 0, totalVotes: 0 };
+
+      return [
+        u.id                          || "",
+        u.name                        || "",
+        u.surname                     || "",
+        u.birthYear                   || "",
+        fmtD(u.createdAt),
+        pd.political_satisfaction     ?? "",
+        pd.change_belief              ?? "",
+        pd.political_interest         ?? "",
+        od.post_thinking              ?? "",
+        od.post_agreement             ?? "",
+        od.post_recommend             ?? "",
+        od.comment                    || "",
+        qs.count,
+        qs.totalVotes
+      ];
+    });
+
+    const ws1 = XLSX.utils.aoa_to_sheet([usersHeader, ...usersRows]);
+    // Širine stupaca
+    ws1["!cols"] = [
+      {wch:36},{wch:14},{wch:16},{wch:16},{wch:18},
+      {wch:36},{wch:28},{wch:26},
+      {wch:36},{wch:28},{wch:14},{wch:40},
+      {wch:24},{wch:26}
+    ];
+    XLSX.utils.book_append_sheet(wb, ws1, "Korisnici");
+
+    // ─── LIST 2: PITANJA ───
+
+    const questionsHeader = [
+      "Pitanje ID", "Tekst pitanja", "Glasovi",
+      "Admin odgovor", "Korisnik ID", "Ime", "Prezime", "Datum"
+    ];
+    const questionsRows = freshQuestions.map(q => {
+      const user = freshUsers.find(u => u.id === q.userId);
+      return [
+        q.id,
+        q.text           || "",
+        q.votes          ?? 0,
+        q.adminReply     || "",
+        q.userId         || "",
+        user?.name       || "",
+        user?.surname    || "",
+        fmtD(q.timestamp)
+      ];
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet([questionsHeader, ...questionsRows]);
+    ws2["!cols"] = [{wch:36},{wch:60},{wch:10},{wch:60},{wch:36},{wch:14},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws2, "Pitanja");
+
+    // ─── LIST 3: AŽURIRANJA ───
+
+    const annSnap = await getDocs(query(
+      collection(db, "announcements"),
+      orderBy("timestamp", "desc"),
+      limit(500)
+    ));
+
+    const updHeader = ["ID", "Naslov", "Tekst", "Datum objave", "Datum isteka (30 dana)"];
+    const updRows   = [];
+    const now       = Date.now();
+    annSnap.forEach(d => {
+      const data = d.data();
+      const ts   = data.timestamp?.toDate?.();
+      const exp  = ts ? new Date(ts.getTime() + THIRTY).toLocaleDateString("hr-HR") : "";
+      updRows.push([
+        d.id,
+        data.title           || "",
+        data.body || data.text || "",
+        ts ? ts.toLocaleDateString("hr-HR") : "",
+        exp
+      ]);
+    });
+
+    const ws3 = XLSX.utils.aoa_to_sheet([updHeader, ...updRows]);
+    ws3["!cols"] = [{wch:36},{wch:40},{wch:80},{wch:16},{wch:20}];
+    XLSX.utils.book_append_sheet(wb, ws3, "Ažuriranja");
+
+    // ─── LIST 4: STATISTIKA ───
+
+    const metaSnap = await getDoc(doc(db, "meta", "stats"));
+    const metaData = metaSnap.exists() ? metaSnap.data() : {};
+
+    // Izračunaj lokalne agregatne podatke
+    const usersWithPre  = freshSurveys.filter(s => s.type === "pre").length;
+    const usersWithPost = freshSurveys.filter(s => s.type === "post").length;
+    const qAnswered     = freshQuestions.filter(q => q.adminReply).length;
+    const qUnanswered   = freshQuestions.filter(q => !q.adminReply).length;
+    const totalVotes    = freshQuestions.reduce((a, q) => a + (q.votes || 0), 0);
+    const avgPre = key => {
+      const vals = freshSurveys.filter(s => s.type === "pre" && s.data?.[key]);
+      return vals.length ? (vals.reduce((a,s) => a + s.data[key], 0) / vals.length).toFixed(2) : "";
+    };
+    const avgPost = key => {
+      const vals = freshSurveys.filter(s => s.type === "post" && s.data?.[key]);
+      return vals.length ? (vals.reduce((a,s) => a + s.data[key], 0) / vals.length).toFixed(2) : "";
+    };
+
+    const statsRows = [
+      ["Datum izvoza", new Date().toLocaleDateString("hr-HR")],
+      ["Vrijeme izvoza", new Date().toLocaleTimeString("hr-HR")],
+      ["", ""],
+      ["── STATISTIKA STRANICE (Firebase meta/stats) ──", ""],
+      ["Posjeta stranici (ukupno)", metaData.visitors  ?? ""],
+      ["Preuzimanja knjige (ukupno)", metaData.downloads ?? ""],
+      ["Popunjenih anketa (meta brojač)", metaData.surveys   ?? ""],
+      ...Object.entries(metaData)
+        .filter(([k]) => !["visitors","downloads","surveys"].includes(k))
+        .map(([k, v]) => [k, v]),
+      ["", ""],
+      ["── KORISNICI ──", ""],
+      ["Ukupno registriranih korisnika", freshUsers.length],
+      ["Korisnika s anketom PRIJE čitanja", usersWithPre],
+      ["Korisnika s dojmovima NAKON čitanja", usersWithPost],
+      ["", ""],
+      ["── ANKETE — prosjeci (skala 1-5) ──", ""],
+      ["PRIJE — prosj. zadovoljstvo sustavom", avgPre("political_satisfaction")],
+      ["PRIJE — prosj. vjera u promjenu",      avgPre("change_belief")],
+      ["PRIJE — prosj. interes za politiku",   avgPre("political_interest")],
+      ["NAKON — prosj. potaknulo na razmišljanje", avgPost("post_thinking")],
+      ["NAKON — prosj. slaganje s idejama",    avgPost("post_agreement")],
+      ["NAKON — prosj. preporuka",             avgPost("post_recommend")],
+      ["", ""],
+      ["── PITANJA ──", ""],
+      ["Ukupno postavljenih pitanja", freshQuestions.length],
+      ["Pitanja s admin odgovorom", qAnswered],
+      ["Pitanja bez odgovora", qUnanswered],
+      ["Ukupni glasovi na pitanjima", totalVotes],
+      ["", ""],
+      ["── AŽURIRANJA ──", ""],
+      ["Ukupno ažuriranja (aktivnih)", updRows.length],
+    ];
+
+    const ws4 = XLSX.utils.aoa_to_sheet(statsRows);
+    ws4["!cols"] = [{wch:46},{wch:24}];
+    XLSX.utils.book_append_sheet(wb, ws4, "Statistika");
+
+    // ─── Preuzmi ───
+    const filename = `neutralizam-izvoz-${new Date().toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    showAdminToast(`Excel preuzet — ${freshUsers.length} korisnika, ${freshQuestions.length} pitanja.`);
+  } catch(e) {
+    showAdminToast("Greška: " + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 </script>
 </body>
