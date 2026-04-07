@@ -994,8 +994,10 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
 @media (max-width: 767px) {
   #navbar              { padding: 0 1.25rem; height: 56px; }
   .nav-links           { display: none; }
-  .nav-right           { gap: 0.5rem; }
+  .nav-right           { gap: 0.4rem; }
   .login-btn           { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+  .settings-lang-badge { display: none; }
+  .settings-btn        { padding: 0 0.5rem; gap: 0; width: 36px; height: 36px; justify-content: center; border-radius: var(--radius); }
   .hero-title          { font-size: clamp(2.8rem, 9vw, 4rem); }
   .hero-sub            { font-size: 1rem; }
   .section-inner       { padding: 4rem 1.25rem; }
@@ -1013,7 +1015,8 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
   .stranka-content     { flex-direction: column; gap: 2rem; }
   .stranka-logo        { width: 120px; height: 120px; }
   .settings-box        { max-width: 100%; }
-  .qw-input-row        { flex-direction: column; }
+  .qw-input-row        { flex-direction: column; width: 100%; }
+  .qw-textarea         { width: 100%; box-sizing: border-box; }
   .qw-submit-btn       { width: 100%; justify-content: center; margin-top: 0; height: auto; padding: 0.8rem 1.25rem; }
   .qw-title            { font-size: 1.5rem; }
   .hero-content        { padding-top: 56px; }
@@ -1408,6 +1411,10 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
   align-items: flex-start;
   margin-bottom: 0.6rem;
   text-align: left;
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .qw-textarea {
@@ -2172,6 +2179,10 @@ footer p { color: var(--text-sub); font-size: 0.85rem; }
   margin-bottom: 2rem;
   gap: 1rem;
   text-align: left;
+  width: 100%;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .qw-char-counter {
   font-size: 0.72rem;
@@ -2440,8 +2451,10 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .setting-chip       { padding: 0.3rem 0.55rem; font-size: 0.74rem; }
   .book-front         { width: 120px; height: 165px; }
   .modal-box          { padding: 1.25rem 1rem; }
-  .nav-right          { gap: 0.35rem; }
-  .login-btn          { padding: 0.35rem 0.7rem; font-size: 0.76rem; }
+  .nav-right          { gap: 0.3rem; }
+  .login-btn          { padding: 0.3rem 0.6rem; font-size: 0.74rem; }
+  .settings-btn        { width: 32px; height: 32px; }
+  .notif-btn           { width: 32px; height: 32px; }
   .admin-totp-digit   { width: 36px; height: 44px; font-size: 1.2rem; }
   .social-card        { padding: 0.75rem; }
   .social-icon        { width: 36px; height: 36px; }
