@@ -2,7 +2,7 @@
 <html lang="hr" data-lang="hr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 
   <!-- ═══ PRIMARY SEO ═══ -->
   <title>Neutralizam — Iskren Svijet</title>
@@ -68,12 +68,35 @@
   }
   </script>
 
+  <!-- ═══ DNS PREFETCH — ubrza Firebase i Fonts ═══ -->
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com"/>
+  <link rel="dns-prefetch" href="https://www.gstatic.com"/>
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com"/>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+
   <!-- ═══ FONTS ═══ -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <!-- ═══ SAFE AREA (iPhone notch/Dynamic Island) ═══ -->
+  <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+    }
+    #navbar        { padding-top: var(--sat); padding-left: calc(1.5rem + var(--sal)); padding-right: calc(1.5rem + var(--sar)); }
+    footer         { padding-bottom: calc(2rem + var(--sab)); }
+    #installBanner { padding-bottom: calc(0.85rem + var(--sab)); }
+    .back-to-top   { bottom: calc(1.5rem + var(--sab)); right: calc(1.5rem + var(--sar)); }
+    .inbox-panel .inbox-drawer { padding-bottom: calc(1rem + var(--sab)); }
+    @media (max-width: 480px) {
+      .modal-overlay { padding-bottom: var(--sab); }
+    }
+  </style>
 </head>
 <body>
 <a href="#hero" class="skip-link" data-hr="Preskoči na sadržaj" data-en="Skip to content" data-de="Zum Inhalt springen">Preskoči na sadržaj</a>
@@ -534,7 +557,7 @@
       <span class="footer-sep">·</span>
       <a href="impressum.html" class="footer-link" data-hr="Impressum" data-en="Impressum" data-de="Impressum">Impressum</a>
       <span class="footer-sep">·</span>
-      <a href="https://mail.google.com/mail/?view=cm&to=hvaljenahrvatska@gmail.com" class="footer-link" target="_blank" rel="noopener" data-hr="Kontakt" data-en="Contact" data-de="Kontakt">hvaljenahrvatska@gmail.com</a>
+      <a href="https://mail.google.com/mail/?view=cm&to=hvaljenahrvatska@gmail.com" class="footer-link" target="_blank" rel="noopener" data-hr="Kontakt" data-en="Contact" data-de="Kontakt"><span class="__cf_email__" data-cfemail="375f41565b5d5259565f45415643445c5677505a565e5b1954585a">[email&#160;protected]</span></a>
     </nav>
 
     <!-- Tracking notice for all visitors -->
@@ -635,15 +658,16 @@
     <!-- ANON LOGIN/REGISTER -->
     <div id="anonSection" class="hidden">
       <h3 class="modal-title" data-hr="Anonimna prijava" data-en="Anonymous login" data-de="Anonyme Anmeldung">Anonimna prijava</h3>
-      <p class="modal-desc" data-hr="Upiši ime, prezime i šifru. Ne trebamo email, OIB ni osobne podatke." data-en="Enter your name, surname and password. We don't need email, ID or personal data." data-de="Gib Name, Nachname und Passwort ein. Wir brauchen keine E-Mail oder persönlichen Daten.">
-        Upiši ime, prezime i šifru. Ne trebamo email, OIB ni osobne podatke.
+      <p class="modal-desc" data-hr="Odaberi korisničko ime i šifru. Ne trebamo email, OIB ni osobne podatke." data-en="Choose a username and password. We don't need email, ID or personal data." data-de="Wähle einen Benutzernamen und Passwort. Wir brauchen keine E-Mail oder persönlichen Daten.">
+        Odaberi korisničko ime i šifru. Ne trebamo email, OIB ni osobne podatke.
       </p>
       <div id="loginForm">
-        <input type="text" id="loginName" class="modal-input" autocomplete="off" data-hr-placeholder="Ime" data-en-placeholder="First name" data-de-placeholder="Vorname" placeholder="Ime" maxlength="40"/>
-        <input type="text" id="loginSurname" class="modal-input" autocomplete="off" data-hr-placeholder="Prezime" data-en-placeholder="Last name" data-de-placeholder="Nachname" placeholder="Prezime" maxlength="40"/>
-        <!-- loginYear skriveno — godina nije potrebna za prijavu -->
-        <input type="number" id="loginYear" class="modal-input" autocomplete="off" placeholder="" min="1900" max="2015" style="display:none" tabindex="-1"/>
-        <input type="password" id="loginPass" class="modal-input" autocomplete="new-password" data-hr-placeholder="Šifra" data-en-placeholder="Password" data-de-placeholder="Passwort" placeholder="Šifra" maxlength="60"/>
+        <input type="text" id="loginUsername" class="modal-input" autocomplete="username"
+          data-hr-placeholder="Korisničko ime" data-en-placeholder="Username" data-de-placeholder="Benutzername"
+          placeholder="Korisničko ime" maxlength="30"/>
+        <input type="password" id="loginPass" class="modal-input" autocomplete="current-password"
+          data-hr-placeholder="Šifra" data-en-placeholder="Password" data-de-placeholder="Passwort"
+          placeholder="Šifra" maxlength="60"/>
         <p class="modal-switch">
           <span data-hr="Nemaš račun?" data-en="No account?" data-de="Kein Konto?">Nemaš račun?</span>
           <button class="link-btn" id="toRegister" data-hr="Registriraj se" data-en="Register" data-de="Registrieren">Registriraj se</button>
@@ -652,10 +676,21 @@
         <p class="modal-error hidden" id="loginError"></p>
       </div>
       <div id="registerForm" class="hidden">
-        <input type="text" id="regName" class="modal-input" autocomplete="off" data-hr-placeholder="Ime" data-en-placeholder="First name" data-de-placeholder="Vorname" placeholder="Ime" maxlength="40"/>
-        <input type="text" id="regSurname" class="modal-input" autocomplete="off" data-hr-placeholder="Prezime" data-en-placeholder="Last name" data-de-placeholder="Nachname" placeholder="Prezime" maxlength="40"/>
-        <input type="number" id="regYear" class="modal-input" autocomplete="off" data-hr-placeholder="Godina rođenja (npr. 1995)" data-en-placeholder="Birth year (e.g. 1995)" data-de-placeholder="Geburtsjahr (z.B. 1995)" placeholder="Godina rođenja (npr. 1995)" min="1900" max="2015"/>
-        <input type="password" id="regPass" class="modal-input" autocomplete="new-password" data-hr-placeholder="Šifra (min. 8 znakova, slovo + broj)" data-en-placeholder="Password (min. 8 chars, letter + number)" data-de-placeholder="Passwort (min. 8 Zeichen, Buchstabe + Zahl)" placeholder="Šifra (min. 8 znakova, slovo + broj)" maxlength="60"/>
+        <input type="text" id="regUsername" class="modal-input" autocomplete="username"
+          data-hr-placeholder="Korisničko ime (jedinstveno, npr. karlo95)" data-en-placeholder="Username (unique, e.g. karlo95)" data-de-placeholder="Benutzername (einzigartig, z.B. karlo95)"
+          placeholder="Korisničko ime (jedinstveno, npr. karlo95)" maxlength="30"/>
+        <input type="text" id="regName" class="modal-input" autocomplete="off"
+          data-hr-placeholder="Ime" data-en-placeholder="First name" data-de-placeholder="Vorname"
+          placeholder="Ime" maxlength="40"/>
+        <input type="text" id="regSurname" class="modal-input" autocomplete="off"
+          data-hr-placeholder="Prezime" data-en-placeholder="Last name" data-de-placeholder="Nachname"
+          placeholder="Prezime" maxlength="40"/>
+        <input type="number" id="regYear" class="modal-input" autocomplete="off"
+          data-hr-placeholder="Godina rođenja (npr. 1995)" data-en-placeholder="Birth year (e.g. 1995)" data-de-placeholder="Geburtsjahr (z.B. 1995)"
+          placeholder="Godina rođenja (npr. 1995)" min="1900" max="2015"/>
+        <input type="password" id="regPass" class="modal-input" autocomplete="new-password"
+          data-hr-placeholder="Šifra (min. 8 znakova, slovo + broj)" data-en-placeholder="Password (min. 8 chars, letter + number)" data-de-placeholder="Passwort (min. 8 Zeichen, Buchstabe + Zahl)"
+          placeholder="Šifra (min. 8 znakova, slovo + broj)" maxlength="60"/>
         <p class="modal-switch">
           <span data-hr="Već imaš račun?" data-en="Already have an account?" data-de="Schon ein Konto?">Već imaš račun?</span>
           <button class="link-btn" id="toLogin" data-hr="Prijavi se" data-en="Log in" data-de="Einloggen">Prijavi se</button>
@@ -673,6 +708,12 @@
           </span>
         </label>
 
+        <p class="pass-warning-note"
+           data-hr="🔑 Šifra se ne može obnoviti. Jednom izgubljena, račun postaje nedostupan zauvijek."
+           data-en="🔑 The password cannot be recovered. Once lost, the account becomes permanently inaccessible."
+           data-de="🔑 Das Passwort kann nicht wiederhergestellt werden. Einmal verloren, ist das Konto dauerhaft unzugänglich.">
+          🔑 Šifra se ne može obnoviti. Jednom izgubljena, račun postaje nedostupan zauvijek.
+        </p>
         <button class="submit-btn" id="doRegister" data-hr="Stvori račun" data-en="Create account" data-de="Konto erstellen" disabled>Stvori račun</button>
         <p class="modal-error hidden" id="regError"></p>
       </div>
@@ -725,7 +766,7 @@
     </div>
     <!-- Tabs -->
     <div class="inbox-tabs">
-      <button class="inbox-tab active" id="inboxTabUpdates" data-hr="Ažuriranja" data-en="Updates" data-de="Updates">Ažuriranja</button>
+      <button class="inbox-tab active" id="inboxTabUpdates" data-hr="Updateovi" data-en="Updates" data-de="Updates">Updateovi</button>
       <button class="inbox-tab" id="inboxTabMessages" data-hr="Poruke" data-en="Messages" data-de="Nachrichten">Poruke</button>
     </div>
     <div class="inbox-body" id="inboxBody">
@@ -740,7 +781,7 @@
 </button>
 
 <!-- Firebase SDK -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module" src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 <!-- ═══ PROGRESS BAR + LOADING SCREEN ═══ -->
 <script>
@@ -770,17 +811,6 @@
       window.addEventListener("load", () => setTimeout(dismiss, 900));
     }
   })();
-
-  // ── Service Worker ──
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js").then(reg => {
-        console.log("Service Worker registered with scope:", reg.scope);
-      }).catch(err => {
-        console.error("Service Worker registration failed:", err);
-      });
-    });
-  }
 </script>
 </body>
 </html>

@@ -35,9 +35,22 @@
 <body>
   <div class="container">
     <div class="emblem">N</div>
-    <h1>Nema internet veze</h1>
-    <p>Stranica nije dostupna bez interneta. Provjeri vezu i pokušaj ponovo.</p>
-    <a href="/" onclick="location.reload();return false;">Pokušaj ponovo</a>
+    <h1 id="msg-title">Nema internet veze</h1>
+    <p id="msg-body">Stranica nije dostupna bez interneta. Provjeri vezu i pokušaj ponovo.</p>
+    <a href="/" id="msg-btn" onclick="location.reload();return false;">Pokušaj ponovo</a>
   </div>
+  <script>
+    const lang = localStorage.getItem("lang") || navigator.language?.slice(0,2) || "hr";
+    const t = {
+      hr: { title: "Nema internet veze",      body: "Stranica nije dostupna bez interneta. Provjeri vezu i pokušaj ponovo.", btn: "Pokušaj ponovo" },
+      en: { title: "No internet connection",   body: "The page is not available without internet. Check your connection and try again.", btn: "Try again" },
+      de: { title: "Keine Internetverbindung", body: "Die Seite ist ohne Internet nicht verfügbar. Bitte Verbindung prüfen und erneut versuchen.", btn: "Erneut versuchen" }
+    };
+    const d = t[lang] || t.hr;
+    document.getElementById("msg-title").textContent = d.title;
+    document.getElementById("msg-body").textContent  = d.body;
+    document.getElementById("msg-btn").textContent   = d.btn;
+    document.documentElement.lang = lang === "de" ? "de" : lang === "en" ? "en" : "hr";
+  </script>
 </body>
 </html>

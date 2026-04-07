@@ -521,6 +521,7 @@
         <table id="usersTable">
           <thead>
             <tr>
+              <th>Korisničko ime</th>
               <th>Ime i prezime</th>
               <th>Korisnički ID</th>
               <th>Registriran</th>
@@ -960,15 +961,16 @@ function renderUsers(users) {
 
     const created = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString("hr-HR") : "—";
 
-        const adminBtns = `
+    const adminBtns = `
       <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap">
-        <button onclick="adminDeleteUser('${u.id}','${u.name} ${u.surname}')"
+        <button onclick="adminDeleteUser('${u.id}','${u.username || u.name}')"
           style="background:none;border:1px solid #e07070;color:#e07070;padding:0.25rem 0.75rem;border-radius:3px;cursor:pointer;font-size:0.75rem;font-family:var(--font-body)">
           Izbriši
         </button>
       </div>`;
 
     return `<tr>
+      <td><strong style="color:var(--gold)">${u.username || "—"}</strong></td>
       <td>${u.name} ${u.surname}</td>
       <td class="sub">${u.id}</td>
       <td class="sub">${created}</td>
@@ -1493,7 +1495,7 @@ document.getElementById("exportAllXlsx")?.addEventListener("click", async () => 
 
     // Header za korisnike
     const usersHeader = [
-      "ID", "Ime", "Prezime", "Godina rođenja", "Datum registracije",
+      "ID", "Korisničko ime", "Ime", "Prezime", "Godina rođenja", "Datum registracije",
       "ANKETA PRIJE — Zadovoljstvo sustavom (1-5)",
       "ANKETA PRIJE — Vjera u promjenu (1-5)",
       "ANKETA PRIJE — Interes za politiku (1-5)",
@@ -1514,6 +1516,7 @@ document.getElementById("exportAllXlsx")?.addEventListener("click", async () => 
 
       return [
         u.id                          || "",
+        u.username                    || "",
         u.name                        || "",
         u.surname                     || "",
         u.birthYear                   || "",
@@ -1531,9 +1534,8 @@ document.getElementById("exportAllXlsx")?.addEventListener("click", async () => 
     });
 
     const ws1 = XLSX.utils.aoa_to_sheet([usersHeader, ...usersRows]);
-    // Širine stupaca
     ws1["!cols"] = [
-      {wch:36},{wch:14},{wch:16},{wch:16},{wch:18},
+      {wch:36},{wch:20},{wch:14},{wch:16},{wch:16},{wch:18},
       {wch:36},{wch:28},{wch:26},
       {wch:36},{wch:28},{wch:14},{wch:40},
       {wch:24},{wch:26}

@@ -3,8 +3,8 @@
 // Caching strategija: Cache-first za statiku, Network-first za Firebase
 // ═══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = "neutralizam-v1";
-const CACHE_OFFLINE = "neutralizam-offline-v1";
+const CACHE_NAME = "neutralizam-v2";
+const CACHE_OFFLINE = "neutralizam-offline-v2";
 
 // Statični resursi za predučitavanje (install faza)
 const PRECACHE_URLS = [
@@ -13,8 +13,11 @@ const PRECACHE_URLS = [
   "/style.css",
   "/script.js",
   "/manifest.json",
+  "/offline.html",
   "/assets/logo.png",
-  "/offline.html"
+  "/privatnost.html",
+  "/uvjeti.html",
+  "/impressum.html"
 ];
 
 // ── Install ──────────────────────────────────────────────────

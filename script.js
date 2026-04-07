@@ -363,53 +363,78 @@ function generateUID() {
   return 'u_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
 }
 
-// loginKey se hashira SHA-256 — plaintext godina više nije vidljiva u bazi
-async function makeLoginKeyHash(name, surname, year) {
-  const raw  = (name + "|" + surname + "|" + (year || "")).toLowerCase().trim();
+// loginKey = SHA-256 hash od usernamea — jedinstven identifikator
+async function makeLoginKeyHash(username) {
+  const raw  = username.toLowerCase().trim();
   const data = new TextEncoder().encode(raw);
   const buf  = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(buf))
     .map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
 }
 
-async function loginUser(name, surname, year, pass) {
+async function loginUser(username, pass) {
   if (!firebaseReady) {
-    currentUser = { id: generateUID(), name, surname };
+    currentUser = { id: generateUID(), username, name: username, surname: "" };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  // Traži po imenu (ne treba godina za prijavu)
-  const nameSnap = await getDocs(query(collection(db, "users"), where("name", "==", name)));
-  const candidates = [];
-  nameSnap.forEach(d => {
-    if (d.data().surname === surname) candidates.push(d);
-  });
+  const loginKey = await makeLoginKeyHash(username);
+  const snap = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
 
-  if (!candidates.length) {
-    return { ok: false, msg: currentLang === "hr" ? "Korisnik ne postoji. Provjeri ime i prezime ili se registriraj." : currentLang === "de" ? "Benutzer nicht gefunden. Bitte registrieren." : "User not found. Check name and surname or register." };
+  if (snap.empty) {
+    return { ok: false, msg:
+      currentLang === "hr" ? "Korisničko ime ne postoji. Provjeri ili se registriraj." :
+      currentLang === "de" ? "Benutzername nicht gefunden. Bitte registrieren." :
+      "Username not found. Check or register."
+    };
   }
 
+  const userDoc = snap.docs[0];
+  const data    = userDoc.data();
   const newHash    = await hashPass(pass);
   const legacyHash = hashPassLegacy(pass);
 
-  // Provjeri lozinku za sve kandidate (može biti više s istim imenom/prezimenom)
-  for (const userDoc of candidates) {
-    const data = userDoc.data();
-    if (data.passHash === newHash || data.passHash === legacyHash) {
-      if (data.passHash === legacyHash && data.passHash !== newHash) {
-        try { await updateDoc(doc(db, "users", userDoc.id), { passHash: newHash }); } catch(e) {}
-      }
-      currentUser = { id: userDoc.id, name: data.name, surname: data.surname, birthYear: data.birthYear };
-      localStorage.setItem("user", JSON.stringify(currentUser));
-      return { ok: true };
-    }
+  if (data.passHash !== newHash && data.passHash !== legacyHash) {
+    return { ok: false, msg:
+      currentLang === "hr" ? "Pogrešna šifra." :
+      currentLang === "de" ? "Falsches Passwort." : "Wrong password."
+    };
   }
 
-  return { ok: false, msg: currentLang === "hr" ? "Pogrešna šifra." : currentLang === "de" ? "Falsches Passwort." : "Wrong password." };
+  if (data.passHash === legacyHash && data.passHash !== newHash) {
+    try { await updateDoc(doc(db, "users", userDoc.id), { passHash: newHash }); } catch(e) {}
+  }
+
+  currentUser = {
+    id: userDoc.id,
+    username: data.username || username,
+    name: data.name,
+    surname: data.surname,
+    birthYear: data.birthYear
+  };
+  localStorage.setItem("user", JSON.stringify(currentUser));
+  return { ok: true };
 }
 
-async function registerUser(name, surname, year, pass) {
+async function registerUser(username, name, surname, year, pass) {
+  // Validacija usernamea
+  if (!username || username.length < 3) {
+    return { ok: false, msg:
+      currentLang === "hr" ? "Korisničko ime mora imati min. 3 znaka." :
+      currentLang === "de" ? "Benutzername mind. 3 Zeichen." :
+      "Username must be at least 3 characters."
+    };
+  }
+  if (!/^[a-zA-Z0-9_.]+$/.test(username)) {
+    return { ok: false, msg:
+      currentLang === "hr" ? "Korisničko ime smije sadržavati samo slova, brojeve, _ i točku." :
+      currentLang === "de" ? "Nur Buchstaben, Zahlen, _ und Punkt erlaubt." :
+      "Username may only contain letters, numbers, _ and dot."
+    };
+  }
+
+  // Validacija šifre
   const hasLetter = /[a-zA-ZÀ-ž]/.test(pass);
   const hasDigit  = /[0-9]/.test(pass);
   if (pass.length < 8 || !hasLetter || !hasDigit) {
@@ -419,37 +444,47 @@ async function registerUser(name, surname, year, pass) {
       "Password must be at least 8 chars with one letter and one number."
     };
   }
+
   const yearNum = parseInt(year);
   if (!yearNum || yearNum < 1900 || yearNum > 2015) {
-    return { ok: false, msg: currentLang === "hr" ? "Unesi valjanu godinu rođenja (1900–2015)." : currentLang === "de" ? "Gib ein gültiges Geburtsjahr ein (1900–2015)." : "Enter a valid birth year (1900–2015)." };
+    return { ok: false, msg:
+      currentLang === "hr" ? "Unesi valjanu godinu rođenja (1900–2015)." :
+      currentLang === "de" ? "Gib ein gültiges Geburtsjahr ein (1900–2015)." :
+      "Enter a valid birth year (1900–2015)."
+    };
   }
 
   if (!firebaseReady) {
     const uid = generateUID();
-    currentUser = { id: uid, name, surname, birthYear: yearNum };
+    currentUser = { id: uid, username, name, surname, birthYear: yearNum };
     localStorage.setItem("user", JSON.stringify(currentUser));
     return { ok: true };
   }
 
-  const loginKey = await makeLoginKeyHash(name, surname, year);
-
-  const existing = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
-  if (!existing.empty) {
-    return { ok: false, msg: currentLang === "hr" ? "Korisnik s tim podacima već postoji. Prijavi se." : currentLang === "de" ? "Benutzer existiert bereits. Bitte anmelden." : "User already exists. Please log in." };
+  // Provjeri jedinstvenost usernamea (case-insensitive)
+  const loginKey = await makeLoginKeyHash(username);
+  const existingSnap = await getDocs(query(collection(db, "users"), where("loginKey", "==", loginKey)));
+  if (!existingSnap.empty) {
+    return { ok: false, msg:
+      currentLang === "hr" ? "Korisničko ime je zauzeto. Odaberi drugo." :
+      currentLang === "de" ? "Benutzername bereits vergeben. Bitte anderen wählen." :
+      "Username is taken. Please choose another."
+    };
   }
 
-  const uid = generateUID();
+  const uid      = generateUID();
   const passHash = await hashPass(pass);
   await setDoc(doc(db, "users", uid), {
+    username: username.toLowerCase(),
     name,
     surname,
     birthYear: yearNum,
-    loginKey,   // SHA-256 hash — godina nije čitljiva
+    loginKey,
     passHash,
     createdAt: serverTimestamp()
   });
 
-  currentUser = { id: uid, name, surname, birthYear: yearNum };
+  currentUser = { id: uid, username: username.toLowerCase(), name, surname, birthYear: yearNum };
   localStorage.setItem("user", JSON.stringify(currentUser));
   return { ok: true };
 }
@@ -464,10 +499,11 @@ function loadStoredUser() {
 function updateLoginUI() {
   const btn  = document.getElementById("openLogin");
   if (currentUser) {
-    btn.dataset.hr = currentUser.name;
-    btn.dataset.en = currentUser.name;
-    btn.dataset.de = currentUser.name;
-    btn.textContent = currentUser.name;
+    const displayName = currentUser.username || currentUser.name;
+    btn.dataset.hr = displayName;
+    btn.dataset.en = displayName;
+    btn.dataset.de = displayName;
+    btn.textContent = displayName;
   } else {
     btn.dataset.hr = "Prijava";
     btn.dataset.en = "Login";
@@ -487,8 +523,8 @@ const regForm   = document.getElementById("registerForm");
 const loggedView= document.getElementById("loggedInView");
 
 function clearModalInputs() {
-  ["loginName","loginSurname","loginYear","loginPass",
-   "regName","regSurname","regYear","regPass",
+  ["loginUsername","loginPass",
+   "regUsername","regName","regSurname","regYear","regPass",
    "adminEmailInput","adminPassInput"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
@@ -514,8 +550,10 @@ function showModal() {
     loginForm.classList.add("hidden");
     regForm.classList.add("hidden");
     loggedView.classList.remove("hidden");
-    document.getElementById("loggedAvatar").textContent = currentUser.name[0].toUpperCase();
-    document.getElementById("loggedName").textContent = currentUser.name + " " + currentUser.surname;
+    const uname = currentUser.username || currentUser.name || "?";
+    document.getElementById("loggedAvatar").textContent = uname[0].toUpperCase();
+    const fullName = [currentUser.name, currentUser.surname].filter(Boolean).join(" ");
+    document.getElementById("loggedName").textContent = fullName || uname;
 
     // Show birth year + fetch registration date
     const metaEl = document.getElementById("loggedMeta");
@@ -738,18 +776,17 @@ document.getElementById("toLogin").addEventListener("click", () => {
 });
 
 document.getElementById("doLogin").addEventListener("click", async () => {
-  const name    = document.getElementById("loginName").value.trim();
-  const surname = document.getElementById("loginSurname").value.trim();
-  const pass    = document.getElementById("loginPass").value;
-  const errEl   = document.getElementById("loginError");
+  const username = document.getElementById("loginUsername").value.trim();
+  const pass     = document.getElementById("loginPass").value;
+  const errEl    = document.getElementById("loginError");
 
-  if (!name || !surname || !pass) {
+  if (!username || !pass) {
     errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : currentLang === "de" ? "Fülle alle Felder aus." : "Fill all fields.";
     errEl.classList.remove("hidden");
     return;
   }
 
-  const result = await loginUser(name, surname, null, pass);
+  const result = await loginUser(username, pass);
   if (result.ok) {
     errEl.classList.add("hidden");
     updateLoginUI();
@@ -762,25 +799,26 @@ document.getElementById("doLogin").addEventListener("click", async () => {
 });
 
 document.getElementById("doRegister").addEventListener("click", async () => {
-  const name    = document.getElementById("regName").value.trim();
-  const surname = document.getElementById("regSurname").value.trim();
-  const year    = document.getElementById("regYear").value.trim();
-  const pass    = document.getElementById("regPass").value;
-  const errEl   = document.getElementById("regError");
-  const gdprOk  = document.getElementById("gdprCheck")?.checked;
+  const username = document.getElementById("regUsername").value.trim();
+  const name     = document.getElementById("regName").value.trim();
+  const surname  = document.getElementById("regSurname").value.trim();
+  const year     = document.getElementById("regYear").value.trim();
+  const pass     = document.getElementById("regPass").value;
+  const errEl    = document.getElementById("regError");
+  const gdprOk   = document.getElementById("gdprCheck")?.checked;
 
   if (!gdprOk) {
     errEl.textContent = currentLang === "de" ? "Bitte akzeptiere die Datenschutzerklärung." : currentLang === "en" ? "Please accept the privacy consent." : "Moraš prihvatiti privolu za obradu podataka.";
     errEl.classList.remove("hidden");
     return;
   }
-  if (!name || !surname || !year || !pass) {
+  if (!username || !name || !surname || !year || !pass) {
     errEl.textContent = currentLang === "hr" ? "Popuni sva polja." : currentLang === "de" ? "Fülle alle Felder aus." : "Fill all fields.";
     errEl.classList.remove("hidden");
     return;
   }
 
-  const result = await registerUser(name, surname, year, pass);
+  const result = await registerUser(username, name, surname, year, pass);
   if (result.ok) {
     errEl.classList.add("hidden");
     updateLoginUI();
